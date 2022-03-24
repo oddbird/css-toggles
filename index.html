@@ -60,13 +60,22 @@
   <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
 
   <script>
-    /* TODO
-    - toggle modes (default, sticky, linear)
-    - wide and narrow scopes
-    - `toggle-group`
-    - `:toggle()` selector
-    - support dynamically added elements
-    - Should elements with `toggle-visibility` be hidden on load if the state is 0?
+    /**
+     * See https://css.oddbird.net/toggles/explainer/
+     *
+     * DONE
+     * - `toggle-root` property
+     * - `toggle` shorthand property
+     * - `toggle-trigger` property
+     * - `toggle-visibility` property
+     *
+     * TODO
+     * - toggle modes (default, sticky, linear)
+     * - wide and narrow scopes
+     * - `toggle-group`
+     * - `:toggle()` selector
+     * - support dynamically added elements
+     * - Should elements with `toggle-visibility` be hidden on load if the state is 0?
     */
     const toggleRoots = {}
     const toggleRootRe = /(?<name>[\w-]+) *((?<initial>\d+)\/)?(?<total>\d*)/
