@@ -10,6 +10,7 @@
     .dfn-list>dt {
       toggle: glossary 1/1;
     }
+
     .dfn-list>dd {
       toggle-visibility: toggle glossary;
     }
@@ -17,12 +18,15 @@
     .collapse {
       toggle-root: collapse;
     }
+
     .collapse button[data-show] {
       toggle-trigger: collapse 1;
     }
+
     .collapse button[data-hide] {
       toggle-trigger: collapse 0;
     }
+
     .collapse p {
       toggle-visibility: collapse;
     }
@@ -41,39 +45,47 @@
     <strong>Hello World!</strong>
     <button data-show>Show</button>
     <button data-hide>Hide</button>
-    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
+    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi
+      neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
   </div>
 
   <div class="collapse">
     <strong>Another one</strong>
     <button data-show>Show</button>
     <button data-hide>Hide</button>
-    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
+    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi
+      neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
   </div>
 
   <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
 
   <script>
     /* TODO
-    - `toggle` shorthand
     - toggle modes (default, sticky, linear)
     - wide and narrow scopes
-    - `toggle-visibility`
     - `toggle-group`
     - `:toggle()` selector
     - support dynamically added elements
+    - Should elements with `toggle-visibility` be hidden on load if the state is 0?
     */
     const toggleRoots = {}
     const toggleRootRe = /(?<name>[\w-]+) *((?<initial>\d+)\/)?(?<total>\d*)/
     const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>\d*)/
     const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 
+    /**
+     * Generate a unique 16-char ID
+    */
     function uid() {
       return Array.from({ length: 16 }, () =>
         Math.floor(Math.random() * 256).toString(16)
       ).join('');
     }
 
+    /**
+     * Get a list of the `element` and its next siblings
+     * @param {HTMLElement} element
+    */
     function withNextSiblings(element) {
       const siblings = [element]
       let next = element.nextElementSibling
@@ -84,18 +96,32 @@
       return siblings
     }
 
+    /**
+     * Create toggle root objects for all elements matching `selectors`.
+     * The object keeps track of the current state
+     * @param {string} name:    name of the toggle root
+     * @param {int}    initial: initial state of the toggle root
+     * @param {int}    total:   total states of the toggle root
+     * @param {string} selectors: CSS selectors of elements to be used as roots
+    */
     function createToggleRoots(name, initial, total, selectors) {
       document.querySelectorAll(selectors).forEach(el => {
         const id = `${name}-${uid()}`
         withNextSiblings(el).forEach(el => { el.dataset.toggleRoot = id })
         toggleRoots[id] = {
-          initial,
           total: total || 1,
           state: initial || 0,
         }
       })
     }
 
+    /**
+     * Create toggle triggers for all elements matching `selectors`.
+     * On click the elements will dispatch a custom `toggle` event
+     * @param {string} name:        name of the toggle root to target
+     * @param {int}    targetState: desired state
+     * @param {string} selectors: CSS selectors of elements to be used as triggers
+     */
     function createToggleTriggers(name, targetState, selectors) {
       const dispatchToggleEvent = ({ target }) => {
         target.dispatchEvent(new CustomEvent('toggle', {
@@ -109,7 +135,8 @@
       })
     }
 
-    const toggleRootPoly = Polyfill({
+    // Polyfill toggle roots by targeting the `toggle-root` property
+    Polyfill({
       declarations: ['toggle-root:*']
     }).doMatched(rules => rules.each(rule => {
       const ruleValue = rule.getDeclaration()['toggle-root']
@@ -118,7 +145,8 @@
       createToggleRoots(name, initial, total, rule.getSelectors())
     }))
 
-    const toggleTriggerPoly = Polyfill({
+    // Polyfill toggle triggers by targeting the `toggle-trigger` property
+    Polyfill({
       declarations: ['toggle-trigger:*']
     }).doMatched(rules => rules.each(rule => {
       const ruleValue = rule.getDeclaration()['toggle-trigger']
@@ -127,7 +155,8 @@
       createToggleTriggers(name, targetState, rule.getSelectors())
     }))
 
-    const shorthandPoly = Polyfill({
+    // Polyfill the shorthand `toggle` property that configures both roots and triggers
+    Polyfill({
       declarations: ['toggle:*']
     }).doMatched(rules => rules.each(rule => {
       const ruleValue = rule.getDeclaration()['toggle']
@@ -138,7 +167,8 @@
       createToggleTriggers(name, undefined, selectors)
     }))
 
-    const toggleVisibilityPoly = Polyfill({
+    // Polyfill visibility toggling by targeting the `toggle-visibility` property
+    Polyfill({
       declarations: ['toggle-visibility:*',]
     }).doMatched(rules => rules.each(rule => {
       const ruleValue = rule.getDeclaration()['toggle-visibility']
@@ -150,13 +180,17 @@
       })
     }))
 
+    // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
     document.body.addEventListener('toggle', event => {
       const { target } = event
       let { toggleRoot, targetState } = event.detail
+
+      // Determine what toggle root is in scope
       const toggleRootElement = target.closest(`[data-toggle-root^="${toggleRoot}-"]`)
       const rootId = toggleRootElement?.dataset?.toggleRoot || null
       if (rootId === null) return
 
+      // Set the toggle to the target state or cycle through states
       try {
         targetState = parseInt(targetState)
       } catch (e) { }
@@ -166,14 +200,15 @@
       } else {
         rootInfo.state == rootInfo.total ? rootInfo.state = 0 : rootInfo.state++
       }
-      console.log(`Toggle ${rootId} set to ${rootInfo.state}`)
+      // console.log(`Toggle ${rootId} set to ${rootInfo.state}`)
 
+      // Find elements that need their visibility toggled
       document.querySelectorAll(`
         [data-toggle-root="${rootId}"][data-toggle-visibility],
         [data-toggle-root="${rootId}"] [data-toggle-visibility]
       `).forEach(el => {
         el.style.visibility = rootInfo.state > 0 ? 'visible' : 'hidden'
-        console.log(`Toggling visibility of ${el}`)
+        // console.log(`Toggling visibility of ${el}`)
       })
     })
 
