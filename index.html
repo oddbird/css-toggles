@@ -7,24 +7,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS Toggles demo</title>
   <style>
-    .accordion>dt {
-      toggle-root: glossary;
-      toggle-trigger: glossary;
+    .dfn-list>dt {
+      toggle: glossary 1/1;
+    }
+    .dfn-list>dd {
+      toggle-visibility: toggle glossary;
     }
 
-    .accordion>dd {
-      toggle-visibility: toggle glossary;
+    .collapse {
+      toggle-root: collapse;
+    }
+    .collapse button[data-show] {
+      toggle-trigger: collapse 1;
+    }
+    .collapse button[data-hide] {
+      toggle-trigger: collapse 0;
+    }
+    .collapse p {
+      toggle-visibility: collapse;
     }
   </style>
 </head>
 
 <body>
-  <dl class='accordion'>
+  <dl class='dfn-list'>
     <dt>Term 1</dt>
     <dd>Long description......</dd>
     <dt>Term 2</dt>
     <dd>Another long description.....</dd>
   </dl>
+
+  <div class="collapse">
+    <strong>Hello World!</strong>
+    <button data-show>Show</button>
+    <button data-hide>Hide</button>
+    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
+  </div>
+
+  <div class="collapse">
+    <strong>Another one</strong>
+    <button data-show>Show</button>
+    <button data-hide>Hide</button>
+    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
+  </div>
 
   <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
 
@@ -59,12 +84,8 @@
       return siblings
     }
 
-    function createToggleRoots(rule) {
-      const ruleValue = rule.getDeclaration()['toggle-root']
-      const { name, initial, total } = toggleRootRe.exec(ruleValue).groups
-      if (name === undefined) return
-
-      document.querySelectorAll(rule.getSelectors()).forEach(el => {
+    function createToggleRoots(name, initial, total, selectors) {
+      document.querySelectorAll(selectors).forEach(el => {
         const id = `${name}-${uid()}`
         withNextSiblings(el).forEach(el => { el.dataset.toggleRoot = id })
         toggleRoots[id] = {
@@ -75,11 +96,7 @@
       })
     }
 
-    function createToggleTriggers(rule) {
-      const ruleValue = rule.getDeclaration()['toggle-trigger']
-      const { name, targetState } = toggleTriggerRe.exec(ruleValue).groups
-      if (name === undefined) return
-
+    function createToggleTriggers(name, targetState, selectors) {
       const dispatchToggleEvent = ({ target }) => {
         target.dispatchEvent(new CustomEvent('toggle', {
           bubbles: true,
@@ -87,12 +104,43 @@
         }))
       }
 
-      document.querySelectorAll(rule.getSelectors()).forEach(el => {
+      document.querySelectorAll(selectors).forEach(el => {
         el.addEventListener('click', dispatchToggleEvent)
       })
     }
 
-    function setupToggleVisibility(rule) {
+    const toggleRootPoly = Polyfill({
+      declarations: ['toggle-root:*']
+    }).doMatched(rules => rules.each(rule => {
+      const ruleValue = rule.getDeclaration()['toggle-root']
+      const { name, initial, total } = toggleRootRe.exec(ruleValue).groups
+      if (name === undefined) return
+      createToggleRoots(name, initial, total, rule.getSelectors())
+    }))
+
+    const toggleTriggerPoly = Polyfill({
+      declarations: ['toggle-trigger:*']
+    }).doMatched(rules => rules.each(rule => {
+      const ruleValue = rule.getDeclaration()['toggle-trigger']
+      const { name, targetState } = toggleTriggerRe.exec(ruleValue).groups
+      if (name === undefined) return
+      createToggleTriggers(name, targetState, rule.getSelectors())
+    }))
+
+    const shorthandPoly = Polyfill({
+      declarations: ['toggle:*']
+    }).doMatched(rules => rules.each(rule => {
+      const ruleValue = rule.getDeclaration()['toggle']
+      const { name, initial, total } = toggleRootRe.exec(ruleValue).groups
+      if (name === undefined) return
+      const selectors = rule.getSelectors()
+      createToggleRoots(name, initial, total, selectors)
+      createToggleTriggers(name, undefined, selectors)
+    }))
+
+    const toggleVisibilityPoly = Polyfill({
+      declarations: ['toggle-visibility:*',]
+    }).doMatched(rules => rules.each(rule => {
       const ruleValue = rule.getDeclaration()['toggle-visibility']
       const { name } = toggleRootRe.exec(ruleValue).groups
       if (name === undefined) return
@@ -100,19 +148,7 @@
       document.querySelectorAll(rule.getSelectors()).forEach(el => {
         el.dataset.toggleVisibility = undefined
       })
-    }
-
-    const toggleRootPoly = Polyfill({
-      declarations: ['toggle-root:*']
-    }).doMatched(rules => rules.each(createToggleRoots))
-
-    const toggleTriggerPoly = Polyfill({
-      declarations: ['toggle-trigger:*',]
-    }).doMatched(rules => rules.each(createToggleTriggers))
-
-    const toggleVisibilityPoly = Polyfill({
-      declarations: ['toggle-visibility:*',]
-    }).doMatched(rules => rules.each(setupToggleVisibility))
+    }))
 
     document.body.addEventListener('toggle', event => {
       const { target } = event
@@ -136,7 +172,7 @@
         [data-toggle-root="${rootId}"][data-toggle-visibility],
         [data-toggle-root="${rootId}"] [data-toggle-visibility]
       `).forEach(el => {
-        el.style.visibility = window.getComputedStyle(el).visibility === 'hidden' ? 'visible' : 'hidden'
+        el.style.visibility = rootInfo.state > 0 ? 'visible' : 'hidden'
         console.log(`Toggling visibility of ${el}`)
       })
     })
