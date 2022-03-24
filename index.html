@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Toggles demo</title>
+  <style>
+    .accordion>dt {
+      toggle-root: glossary;
+      toggle-trigger: glossary;
+    }
+
+    .accordion>dd {
+      toggle-visibility: toggle glossary;
+    }
+  </style>
+</head>
+
+<body>
+  <dl class='accordion'>
+    <dt>Term 1</dt>
+    <dd>Long description......</dd>
+    <dt>Term 2</dt>
+    <dd>Another long description.....</dd>
+  </dl>
+
+  <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
+
+  <script>
+    /* TODO
+    - `toggle` shorthand
+    - toggle modes (default, sticky, linear)
+    - wide and narrow scopes
+    - `toggle-visibility`
+    - `toggle-group`
+    - `:toggle()` selector
+    - support dynamically added elements
+    */
+    const toggleRoots = {}
+    const toggleRootRe = /(?<name>[\w-]+) *((?<initial>\d+)\/)?(?<total>\d*)/
+    const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>\d*)/
+    const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
+
+    function uid() {
+      return Array.from({ length: 16 }, () =>
+        Math.floor(Math.random() * 256).toString(16)
+      ).join('');
+    }
+
+    function withNextSiblings(element) {
+      const siblings = [element]
+      let next = element.nextElementSibling
+      while (next !== null) {
+        siblings.push(next)
+        next = next.nextElementSibling
+      }
+      return siblings
+    }
+
+    function createToggleRoots(rule) {
+      const ruleValue = rule.getDeclaration()['toggle-root']
+      const { name, initial, total } = toggleRootRe.exec(ruleValue).groups
+      if (name === undefined) return
+
+      document.querySelectorAll(rule.getSelectors()).forEach(el => {
+        const id = `${name}-${uid()}`
+        withNextSiblings(el).forEach(el => { el.dataset.toggleRoot = id })
+        toggleRoots[id] = {
+          initial,
+          total: total || 1,
+          state: initial || 0,
+        }
+      })
+    }
+
+    function createToggleTriggers(rule) {
+      const ruleValue = rule.getDeclaration()['toggle-trigger']
+      const { name, targetState } = toggleTriggerRe.exec(ruleValue).groups
+      if (name === undefined) return
+
+      const dispatchToggleEvent = ({ target }) => {
+        target.dispatchEvent(new CustomEvent('toggle', {
+          bubbles: true,
+          detail: { toggleRoot: name, targetState: targetState }
+        }))
+      }
+
+      document.querySelectorAll(rule.getSelectors()).forEach(el => {
+        el.addEventListener('click', dispatchToggleEvent)
+      })
+    }
+
+    function setupToggleVisibility(rule) {
+      const ruleValue = rule.getDeclaration()['toggle-visibility']
+      const { name } = toggleRootRe.exec(ruleValue).groups
+      if (name === undefined) return
+
+      document.querySelectorAll(rule.getSelectors()).forEach(el => {
+        el.dataset.toggleVisibility = undefined
+      })
+    }
+
+    const toggleRootPoly = Polyfill({
+      declarations: ['toggle-root:*']
+    }).doMatched(rules => rules.each(createToggleRoots))
+
+    const toggleTriggerPoly = Polyfill({
+      declarations: ['toggle-trigger:*',]
+    }).doMatched(rules => rules.each(createToggleTriggers))
+
+    const toggleVisibilityPoly = Polyfill({
+      declarations: ['toggle-visibility:*',]
+    }).doMatched(rules => rules.each(setupToggleVisibility))
+
+    document.body.addEventListener('toggle', event => {
+      const { target } = event
+      let { toggleRoot, targetState } = event.detail
+      const toggleRootElement = target.closest(`[data-toggle-root^="${toggleRoot}-"]`)
+      const rootId = toggleRootElement?.dataset?.toggleRoot || null
+      if (rootId === null) return
+
+      try {
+        targetState = parseInt(targetState)
+      } catch (e) { }
+      const rootInfo = toggleRoots[rootId]
+      if (Number.isInteger(targetState)) {
+        rootInfo.state = targetState
+      } else {
+        rootInfo.state == rootInfo.total ? rootInfo.state = 0 : rootInfo.state++
+      }
+      console.log(`Toggle ${rootId} set to ${rootInfo.state}`)
+
+      document.querySelectorAll(`
+        [data-toggle-root="${rootId}"][data-toggle-visibility],
+        [data-toggle-root="${rootId}"] [data-toggle-visibility]
+      `).forEach(el => {
+        el.style.visibility = window.getComputedStyle(el).visibility === 'hidden' ? 'visible' : 'hidden'
+        console.log(`Toggling visibility of ${el}`)
+      })
+    })
+
+  </script>
+</body>
+
+</html>
