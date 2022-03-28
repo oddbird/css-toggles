@@ -82,14 +82,8 @@
     const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>\d*)/
     const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 
-    /**
-     * Generate a unique 16-char ID
-    */
-    function uid() {
-      return Array.from({ length: 16 }, () =>
-        Math.floor(Math.random() * 256).toString(16)
-      ).join('');
-    }
+    let counter = 0
+    const uid = () => counter++
 
     /**
      * Get a list of the `element` and its next siblings
@@ -185,7 +179,7 @@
       if (name === undefined) return
 
       document.querySelectorAll(rule.getSelectors()).forEach(el => {
-        el.dataset.toggleVisibility = undefined
+        el.dataset.toggleVisibility = ''
       })
     }))
 
