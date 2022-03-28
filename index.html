@@ -115,6 +115,7 @@
           total: total || 1,
           state: initial || 0,
         }
+        renderToggleState(id)
       })
     }
 
@@ -137,6 +138,36 @@
         el.addEventListener('click', dispatchToggleEvent)
       })
     }
+
+    /**
+     * Render toggle state information to the DOM
+     * @param {string} toggleRootId: identifier of the toggle root to update
+    */
+    function renderToggleState(toggleRootId) {
+      const rootInfo = toggleRoots[toggleRootId]
+
+      // Find elements that need their visibility toggled
+      document.querySelectorAll(`
+        [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
+        [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
+      `).forEach(el => {
+        el.style.visibility = rootInfo.state > 0 ? 'visible' : 'hidden'
+        // console.log(`Toggling visibility of ${el}`)
+      })
+    }
+
+    // Polyfill visibility toggling by targeting the `toggle-visibility` property
+    Polyfill({
+      declarations: ['toggle-visibility:*',]
+    }).doMatched(rules => rules.each(rule => {
+      const ruleValue = rule.getDeclaration()['toggle-visibility']
+      const { name } = toggleRootRe.exec(ruleValue).groups
+      if (name === undefined) return
+
+      document.querySelectorAll(rule.getSelectors()).forEach(el => {
+        el.dataset.toggleVisibility = ''
+      })
+    }))
 
     // Polyfill toggle roots by targeting the `toggle-root` property
     Polyfill({
@@ -170,19 +201,6 @@
       createToggleTriggers(name, undefined, selectors)
     }))
 
-    // Polyfill visibility toggling by targeting the `toggle-visibility` property
-    Polyfill({
-      declarations: ['toggle-visibility:*',]
-    }).doMatched(rules => rules.each(rule => {
-      const ruleValue = rule.getDeclaration()['toggle-visibility']
-      const { name } = toggleRootRe.exec(ruleValue).groups
-      if (name === undefined) return
-
-      document.querySelectorAll(rule.getSelectors()).forEach(el => {
-        el.dataset.toggleVisibility = ''
-      })
-    }))
-
     // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
     document.body.addEventListener('toggle', event => {
       const { target } = event
@@ -205,14 +223,7 @@
       }
       // console.log(`Toggle ${rootId} set to ${rootInfo.state}`)
 
-      // Find elements that need their visibility toggled
-      document.querySelectorAll(`
-        [data-toggle-root="${rootId}"][data-toggle-visibility],
-        [data-toggle-root="${rootId}"] [data-toggle-visibility]
-      `).forEach(el => {
-        el.style.visibility = rootInfo.state > 0 ? 'visible' : 'hidden'
-        // console.log(`Toggling visibility of ${el}`)
-      })
+      renderToggleState(rootId)
     })
 
   </script>
