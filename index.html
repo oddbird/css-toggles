@@ -30,6 +30,27 @@
     .collapse p {
       toggle-visibility: collapse;
     }
+
+    .color-cycle {
+      toggle-root: colors 2;
+    }
+
+    .color-cycle button {
+      toggle-trigger: colors;
+    }
+
+    /* Use data-toggle as you would use `:toggle()` */
+    .color-cycle p[data-toggle="colors 0"] {
+      color: green;
+    }
+
+    .color-cycle p[data-toggle="colors 1"] {
+      color: rebeccapurple;
+    }
+
+    .color-cycle p[data-toggle="colors 2"] {
+      color: orangered;
+    }
   </style>
 </head>
 
@@ -55,6 +76,18 @@
     <button data-hide>Hide</button>
     <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi
       neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
+  </div>
+
+  <div class="color-cycle">
+    <button>Change color</button>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus quae accusantium ipsam nesciunt vel omnis fugit
+      soluta, beatae debitis laboriosam perferendis eligendi earum nam ut nihil quas a cumque harum!</p>
+  </div>
+
+  <div class="color-cycle">
+    <button>Change color</button>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus quae accusantium ipsam nesciunt vel omnis fugit
+      soluta, beatae debitis laboriosam perferendis eligendi earum nam ut nihil quas a cumque harum!</p>
   </div>
 
   <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
@@ -86,6 +119,12 @@
     const uid = () => counter++
 
     /**
+     * Strip the `[data-toggle="*"]` segment of a selector.
+     * Used to determine a base selector for DOM nodes that need polyfilling
+     */
+    const stripDataToggle = value => value.replace(/\[data-toggle=['"].*['"]\]/, '')
+
+    /**
      * Get a list of the `element` and its next siblings
      * @param {HTMLElement} element
     */
@@ -112,6 +151,7 @@
         const id = `${name}-${uid()}`
         withNextSiblings(el).forEach(el => { el.dataset.toggleRoot = id })
         toggleRoots[id] = {
+          name,
           total: total || 1,
           state: initial || 0,
         }
@@ -144,19 +184,38 @@
      * @param {string} toggleRootId: identifier of the toggle root to update
     */
     function renderToggleState(toggleRootId) {
-      const rootInfo = toggleRoots[toggleRootId]
+      const toggleRoot = toggleRoots[toggleRootId]
 
       // Find elements that need their visibility toggled
       document.querySelectorAll(`
         [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
         [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
       `).forEach(el => {
-        el.style.visibility = rootInfo.state > 0 ? 'visible' : 'hidden'
-        // console.log(`Toggling visibility of ${el}`)
+        el.style.visibility = toggleRoot.state > 0 ? 'visible' : 'hidden'
+      })
+
+      // Write the toggle state on elements selected by [data-toggle]
+      document.querySelectorAll(`
+        [data-toggle-root="${toggleRootId}"][data-toggle],
+        [data-toggle-root="${toggleRootId}"] [data-toggle]
+      `).forEach(el => {
+        el.dataset.toggle = `${toggleRoot.name} ${toggleRoot.state}`
       })
     }
 
-    // Polyfill visibility toggling by targeting the `toggle-visibility` property
+    // Get a list of all selectors that use `data-toggle` and actually set the attribute in the DOM.
+    // The attribute is used instead of the `:toggle()` pseudoclass.
+    Polyfill({
+      selectors: ['[data-toggle=',]
+    }).doMatched(rules => rules.each(rule => {
+      let selectors = new Set(rule._rule.selectors.map(stripDataToggle))
+      selectors = Array.from(selectors).join(',')
+      document.querySelectorAll(selectors).forEach(el => {
+        el.dataset.toggle = ''
+      })
+    }))
+
+    // Add `data-toggle-visibility` attributes to elements that use the `toggle-visibility` property
     Polyfill({
       declarations: ['toggle-visibility:*',]
     }).doMatched(rules => rules.each(rule => {
