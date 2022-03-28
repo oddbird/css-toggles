@@ -51,6 +51,14 @@
     .color-cycle p[data-toggle="colors 2"] {
       color: orangered;
     }
+
+    .tree {
+      toggle: tree;
+    }
+
+    .tree+ul {
+      toggle-visibility: toggle tree;
+    }
   </style>
 </head>
 
@@ -89,6 +97,24 @@
     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus quae accusantium ipsam nesciunt vel omnis fugit
       soluta, beatae debitis laboriosam perferendis eligendi earum nam ut nihil quas a cumque harum!</p>
   </div>
+
+  <ul>
+    <li><a href='#'>home</a></li>
+    <li>
+      <button class='tree'>resources</button>
+      <ul>
+        <li><a href='#'>articles</a></li>
+        <li><a href='#'>demos</a></li>
+        <li>
+          <button class='tree'>media</button>
+          <ul>
+            <li><a href='#'>audio</a></li>
+            <li><a href='#'>visual</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
 
   <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
 
@@ -191,6 +217,10 @@
         [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
         [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
       `).forEach(el => {
+        // Avoid interfering with other nested toggles that don't match
+        // the current one
+        if (el.dataset.toggleRoot !== toggleRootId) return
+
         el.style.visibility = toggleRoot.state > 0 ? 'visible' : 'hidden'
       })
 
