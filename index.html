@@ -16,7 +16,7 @@
     }
 
     .collapse {
-      toggle-root: collapse;
+      toggle-root: collapse self;
     }
 
     .collapse button[data-show] {
@@ -32,7 +32,7 @@
     }
 
     .color-cycle {
-      toggle-root: colors 2;
+      toggle-root: colors 2 self;
     }
 
     .color-cycle button {
@@ -58,6 +58,36 @@
 
     .tree+ul {
       toggle-visibility: toggle tree;
+    }
+
+    panel-set {
+      /* The common ancestor establishes a group */
+      toggle-group: tab;
+    }
+
+    panel-tab:first-of-type {
+      /* The first tab also sets its initial state
+    to be active */
+      toggle: tab 1/1 group sticky;
+    }
+
+    panel-tab {
+      /* Each tab creates a sticky toggle
+    (so once it’s open, clicking again won’t close it),
+    opts into the group,
+    and declares itself a toggle activator */
+      toggle: tab 1 group sticky;
+      display: block;
+    }
+
+    panel-tab:toggle(tab) {
+      /* styling for the active tab */
+    }
+
+    panel-card {
+      /* card visibility is linked to toggle state */
+      toggle-visibility: toggle tab;
+      display: block;
     }
   </style>
 </head>
@@ -116,6 +146,13 @@
     </li>
   </ul>
 
+  <panel-set>
+    <panel-tab>first tab</panel-tab>
+    <panel-card>first panel content</panel-card>
+    <panel-tab>second tab</panel-tab>
+    <panel-card>second panel content</panel-card>
+  </panel-set>
+
   <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
 
   <script>
@@ -137,7 +174,7 @@
      * - support dynamically added elements
     */
     const toggleRoots = {}
-    const toggleRootRe = /(?<name>[\w-]+) *((?<initial>\d+)\/)?(?<total>\d*)/
+    const toggleRootRe = /(?<name>[\w-]+) *((?<initial>\d+)\/)?(?<total>\d*) *(?<modifiers>.*)/
     const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>\d*)/
     const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 
@@ -170,17 +207,31 @@
      * @param {string} name:    name of the toggle root
      * @param {int}    initial: initial state of the toggle root
      * @param {int}    total:   total states of the toggle root
+     * @param {string} modifiers: additional toggle root settings (group, sticky, etc)
      * @param {string} selectors: CSS selectors of elements to be used as roots
     */
-    function createToggleRoots(name, initial, total, selectors) {
+    function createToggleRoots(name, initial, total, modifiers, selectors) {
+      const _total = parseInt(total || 1)
+      const _state = parseInt(initial || 0)
+      const _modifiers = modifiers?.split(' ') || []
+      const group = _modifiers.includes('group')
+      const isNarrow = _modifiers.includes('self')
+      let resetTo = 0
+      if (_modifiers.includes('linear')) resetTo = _total
+      if (_modifiers.includes('sticky')) resetTo = 1
+      const config = {
+        name,
+        resetTo,
+        group,
+        isNarrow,
+        total: _total,
+        state: _state,
+      }
       document.querySelectorAll(selectors).forEach(el => {
         const id = `${name}-${uid()}`
-        withNextSiblings(el).forEach(el => { el.dataset.toggleRoot = id })
-        toggleRoots[id] = {
-          name,
-          total: total || 1,
-          state: initial || 0,
-        }
+        const elements = isNarrow ? [el] : withNextSiblings(el)
+        elements.forEach(el => { el.dataset.toggleRoot = id })
+        toggleRoots[id] = { ...config }
         renderToggleState(id)
       })
     }
@@ -219,7 +270,8 @@
       `).forEach(el => {
         // Avoid interfering with other nested toggles that don't match
         // the current one
-        if (el.dataset.toggleRoot !== toggleRootId) return
+        const value = el.dataset.toggleRoot
+        if (value && value !== toggleRootId) return
 
         el.style.visibility = toggleRoot.state > 0 ? 'visible' : 'hidden'
       })
@@ -263,9 +315,9 @@
       declarations: ['toggle-root:*']
     }).doMatched(rules => rules.each(rule => {
       const ruleValue = rule.getDeclaration()['toggle-root']
-      const { name, initial, total } = toggleRootRe.exec(ruleValue).groups
+      const { name, initial, total, modifiers } = toggleRootRe.exec(ruleValue).groups
       if (name === undefined) return
-      createToggleRoots(name, initial, total, rule.getSelectors())
+      createToggleRoots(name, initial, total, modifiers, rule.getSelectors())
     }))
 
     // Polyfill toggle triggers by targeting the `toggle-trigger` property
@@ -283,36 +335,49 @@
       declarations: ['toggle:*']
     }).doMatched(rules => rules.each(rule => {
       const ruleValue = rule.getDeclaration()['toggle']
-      const { name, initial, total } = toggleRootRe.exec(ruleValue).groups
+      const { name, initial, total, modifiers } = toggleRootRe.exec(ruleValue).groups
       if (name === undefined) return
       const selectors = rule.getSelectors()
-      createToggleRoots(name, initial, total, selectors)
+      createToggleRoots(name, initial, total, modifiers, selectors)
       createToggleTriggers(name, undefined, selectors)
     }))
 
     // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
     document.body.addEventListener('toggle', event => {
       const { target } = event
-      let { toggleRoot, targetState } = event.detail
+      let { toggleRoot: name, targetState } = event.detail
 
       // Determine what toggle root is in scope
-      const toggleRootElement = target.closest(`[data-toggle-root^="${toggleRoot}-"]`)
-      const rootId = toggleRootElement?.dataset?.toggleRoot || null
-      if (rootId === null) return
+      const toggleRootElement = target.closest(`[data-toggle-root^="${name}-"]`)
+      const id = toggleRootElement?.dataset?.toggleRoot || null
+      const toggleRoot = toggleRoots[id]
+      if (toggleRoot === undefined) return
+
+      // Reset all other toggles if we're on a group
+      if (toggleRoot.group) {
+        for (let _id of Object.keys(toggleRoots)) {
+          if (toggleRoots[_id].name === name) {
+            toggleRoots[_id].state = 0
+            renderToggleState(_id)
+          }
+        }
+      }
 
       // Set the toggle to the target state or cycle through states
       try {
         targetState = parseInt(targetState)
       } catch (e) { }
-      const rootInfo = toggleRoots[rootId]
       if (Number.isInteger(targetState)) {
-        rootInfo.state = targetState
+        toggleRoot.state = targetState
       } else {
-        rootInfo.state == rootInfo.total ? rootInfo.state = 0 : rootInfo.state++
+        if (toggleRoot.state == toggleRoot.total) {
+          toggleRoot.state = toggleRoot.resetTo
+        } else {
+          toggleRoot.state++
+        }
       }
-      // console.log(`Toggle ${rootId} set to ${rootInfo.state}`)
 
-      renderToggleState(rootId)
+      renderToggleState(id)
     })
 
   </script>
