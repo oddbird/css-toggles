@@ -207,8 +207,11 @@ document.body.addEventListener('toggle', event => {
 
   // Set the toggle to the target state or cycle through states
   try {
-    toggleRoot.state = parseInt(targetState)
-  } catch (e) {
+    targetState = parseInt(targetState)
+  } catch (e) { }
+  if (Number.isInteger(targetState)) {
+    toggleRoot.state = targetState
+  } else {
     if (toggleRoot.state == toggleRoot.total) {
       toggleRoot.state = toggleRoot.resetTo
     } else {
