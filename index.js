@@ -90,7 +90,7 @@ function createToggleTriggers(name, targetState, selectors) {
   const dispatchToggleEvent = ({ target }) => {
     target.dispatchEvent(new CustomEvent('toggle', {
       bubbles: true,
-      detail: { toggleRoot: name, targetState: targetState }
+      detail: { toggleRoot: name, targetState }
     }))
   }
 
@@ -116,7 +116,7 @@ function renderToggleState(toggleRootId) {
     const value = el.dataset.toggleRoot
     if (value && value !== toggleRootId) return
 
-    el.style.visibility = toggleRoot.state > 0 ? 'visible' : 'hidden'
+    el.dataset.toggleVisibility = toggleRoot.state > 0 ? 'visible' : 'hidden'
   })
 
   // Write the toggle state on elements selected by [data-toggle]
@@ -127,6 +127,23 @@ function renderToggleState(toggleRootId) {
     el.dataset.toggle = `${toggleRoot.name} ${toggleRoot.state}`
   })
 }
+
+// Insert styles for visually hidden content
+const styleSheet = document.createElement('style')
+styleSheet.innerHTML = `
+[data-toggle-visibility='hidden']:not(:focus):not(:focus-within) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important; /* Fix for https://github.com/twbs/bootstrap/issues/25686 */
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+`
+document.head.append(styleSheet)
 
 // Get a list of all selectors that use `data-toggle` and actually set the attribute in the DOM.
 // The attribute is used instead of the `:toggle()` pseudoclass.
