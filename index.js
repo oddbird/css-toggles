@@ -10,10 +10,11 @@
  * - Should elements with `toggle-visibility` be hidden on load if the state is 0? YES
  * - toggle modes (default, sticky, linear)
  * - wide and narrow scopes
- * - `toggle-group`
  *
  * TODO
+ * - `toggle-group`
  * - support dynamically added elements
+ * - decouple from CSS rule order (rely only on markup)
 */
 const toggleRoots = {}
 const toggleRootRe = /(?<name>[\w-]+) *((?<initial>\d+)\/)?(?<total>\d*) *(?<modifiers>.*)/

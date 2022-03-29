@@ -7,51 +7,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS Toggles demo</title>
   <style>
-    .dfn-list>dt {
-      toggle: glossary 1/1;
+    /* Binary switch */
+    .switch {
+      toggle: switch;
     }
 
-    .dfn-list>dd {
+    .content[data-toggle="switch 1"] {
+      /* Selector should be .content:toggle(switch 1) */
+      background-color: black;
+      color: white;
+    }
+
+    /* Accordion */
+    .accordion>dt {
+      toggle: glossary;
+    }
+
+    .accordion>dd {
       toggle-visibility: toggle glossary;
     }
 
-    .collapse {
-      toggle-root: collapse self;
-    }
-
-    .collapse button[data-show] {
-      toggle-trigger: collapse 1;
-    }
-
-    .collapse button[data-hide] {
-      toggle-trigger: collapse 0;
-    }
-
-    .collapse p {
-      toggle-visibility: collapse;
-    }
-
-    .color-cycle {
-      toggle-root: colors 2 self;
-    }
-
-    .color-cycle button {
-      toggle-trigger: colors;
-    }
-
-    /* Use data-toggle as you would use `:toggle()` */
-    .color-cycle p[data-toggle="colors 0"] {
-      color: green;
-    }
-
-    .color-cycle p[data-toggle="colors 1"] {
-      color: rebeccapurple;
-    }
-
-    .color-cycle p[data-toggle="colors 2"] {
-      color: orangered;
-    }
-
+    /* Tree view */
     .tree {
       toggle: tree;
     }
@@ -60,11 +36,7 @@
       toggle-visibility: toggle tree;
     }
 
-    panel-set {
-      /* The common ancestor establishes a group */
-      toggle-group: tab;
-    }
-
+    /* Tabs */
     panel-tab:first-of-type {
       /* The first tab also sets its initial state
     to be active */
@@ -80,54 +52,79 @@
       display: block;
     }
 
-    panel-tab:toggle(tab) {
-      /* styling for the active tab */
+    panel-tab[data-toggle="tab 1"] {
+      /* Selector should be panel-tab:toggle(tab 1) */
+      font-weight: bold;
     }
 
     panel-card {
-      /* card visibility is linked to toggle state */
       toggle-visibility: toggle tab;
-      display: block;
+    }
+
+    /* Multiple states */
+    .colors {
+      toggle-root: colors 4;
+    }
+
+    .colors button {
+      toggle-trigger: colors;
+    }
+
+    .colors button[data-target="0"] {
+      toggle-trigger: colors 0;
+    }
+
+    .colors button[data-target="1"] {
+      toggle-trigger: colors 1;
+    }
+
+    .colors button[data-target="2"] {
+      toggle-trigger: colors 2;
+    }
+
+    .colors button[data-target="3"] {
+      toggle-trigger: colors 3;
+    }
+
+    .colors p[data-toggle="colors 0"] {
+      color: rebeccapurple;
+    }
+
+    .colors p[data-toggle="colors 1"] {
+      color: green;
+    }
+
+    .colors p[data-toggle="colors 2"] {
+      color: blue;
+    }
+
+    .colors p[data-toggle="colors 3"] {
+      color: red;
     }
   </style>
 </head>
 
 <body>
-  <dl class='dfn-list'>
+  <h2>Binary switch</h2>
+  <div>
+    <!-- Need a parent div to avoid greedily attaching all top-level siblings to this toggle root -->
+    <button class="switch">Switch modes</button>
+    <p class="content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae officiis quam aut veniam
+      perspiciatis reiciendis doloremque, aliquid commodi quod nemo odio delectus id corrupti est earum qui omnis vel
+      quis.</p>
+  </div>
+
+  <h2>Accordion/disclosure components</h2>
+  <dl class='accordion'>
     <dt>Term 1</dt>
     <dd>Long description......</dd>
     <dt>Term 2</dt>
     <dd>Another long description.....</dd>
+    <dt>Term 3</dt>
+    <dd>Lorem ipsum dolor sit amet...</dd>
   </dl>
 
-  <div class="collapse">
-    <strong>Hello World!</strong>
-    <button data-show>Show</button>
-    <button data-hide>Hide</button>
-    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi
-      neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
-  </div>
-
-  <div class="collapse">
-    <strong>Another one</strong>
-    <button data-show>Show</button>
-    <button data-hide>Hide</button>
-    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Debitis in eius omnis ipsam quis tempore fugit animi
-      neque laborum minima, asperiores, labore corrupti quas unde quia sequi ipsa, deserunt cum?</p>
-  </div>
-
-  <div class="color-cycle">
-    <button>Change color</button>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus quae accusantium ipsam nesciunt vel omnis fugit
-      soluta, beatae debitis laboriosam perferendis eligendi earum nam ut nihil quas a cumque harum!</p>
-  </div>
-
-  <div class="color-cycle">
-    <button>Change color</button>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus quae accusantium ipsam nesciunt vel omnis fugit
-      soluta, beatae debitis laboriosam perferendis eligendi earum nam ut nihil quas a cumque harum!</p>
-  </div>
-
+  <h2>Tree view</h2>
   <ul>
     <li><a href='#'>home</a></li>
     <li>
@@ -146,12 +143,24 @@
     </li>
   </ul>
 
+  <h2>Tab and exclusive accordions</h2>
   <panel-set>
-    <panel-tab>first tab</panel-tab>
-    <panel-card>first panel content</panel-card>
-    <panel-tab>second tab</panel-tab>
-    <panel-card>second panel content</panel-card>
+    <panel-tab>First tab</panel-tab>
+    <panel-card>First panel content</panel-card>
+    <panel-tab>Second tab</panel-tab>
+    <panel-card>Second panel content</panel-card>
   </panel-set>
+
+  <h2>Multiple states</h2>
+  <div class="colors">
+    <button>Cycle</button>
+    <button data-target="0">Purple</button>
+    <button data-target="1">Green</button>
+    <button data-target="2">Blue</button>
+    <button data-target="3">Red</button>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem minus aut praesentium? Tempore nemo dolorem
+      libero neque repellat voluptatem amet ad iusto fugit a, aliquid labore sequi ea in voluptatibus!</p>
+  </div>
 
   <script src="https://cdn.statically.io/gh/philipwalton/polyfill/master/dist/polyfill.min.js"></script>
   <script src="index.js"></script>
