@@ -54,13 +54,13 @@ function withNextSiblings(element) {
  * @param {string} selectors: CSS selectors of elements to be used as roots
 */
 function createToggleRoots(name, initial, total, modifiers, selectors) {
-  const _total = parseInt(total || 1)
+  const _total = parseInt(total || 2)
   const _state = parseInt(initial || 0)
   const _modifiers = modifiers?.split(' ') || []
   const group = _modifiers.includes('group')
   const isNarrow = _modifiers.includes('self')
   let resetTo = 0
-  if (_modifiers.includes('linear')) resetTo = _total
+  if (_modifiers.includes('linear')) resetTo = _total - 1
   if (_modifiers.includes('sticky')) resetTo = 1
   const config = {
     name,
@@ -213,7 +213,7 @@ document.body.addEventListener('toggle', event => {
   if (Number.isInteger(targetState)) {
     toggleRoot.state = targetState
   } else {
-    if (toggleRoot.state == toggleRoot.total) {
+    if (toggleRoot.state == toggleRoot.total - 1) {
       toggleRoot.state = toggleRoot.resetTo
     } else {
       toggleRoot.state++
