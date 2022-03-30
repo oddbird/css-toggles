@@ -16,13 +16,27 @@
  * - support dynamically added elements
  * - decouple from CSS rule order (rely only on markup)
 */
-const toggleRoots = {}
-const toggleRootRe = /(?<name>[\w-]+) *((?<initial>\d+)\/)?(?<total>\d*) *(?<modifiers>.*)/
+
+/** Build a regex from an array of parts */
+const makeRegex = (parts, opts) => RegExp(parts.map(p => p.source).join(''), opts)
+const toggleRootRe = makeRegex([
+  /(?<name>[\w-]+)/,      // Toggle root name
+  / */,                   // Whitespace
+  /((?<initial>\d+)\/)?/, // Integer followed by slash (optional)
+  /(?<numActive>\d*)?/,       // Number of active states (optional)
+  /(\[(?<states>.+)\])?/, // List of named states enclosed in [] (optional)
+  / */,                   // Whitespace
+  /(at +(?<at>[\w-]+))?/, // Literal 'at' followed by initial state (optional)
+  / */,                   // Whitespace
+  /(?<modifiers>.*)/      // Anything else (optional)
+])
 const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>\d*)/
 const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 
 let counter = 0
 const uid = () => counter++
+
+const toggleRoots = {}
 
 /**
  * Strip the `[data-toggle="*"]` segment of a selector.
@@ -47,29 +61,36 @@ function withNextSiblings(element) {
 /**
  * Create toggle root objects for all elements matching `selectors`.
  * The object keeps track of the current state
- * @param {string} name:    name of the toggle root
- * @param {int}    initial: initial state of the toggle root
- * @param {int}    total:   total states of the toggle root
- * @param {string} modifiers: additional toggle root settings (group, sticky, etc)
- * @param {string} selectors: CSS selectors of elements to be used as roots
+ * @param {string} ruleValue: value of the `toggle-root` or `toggle` rule
+ * @param {string} selectors: CSS selector of elements to be used as roots
 */
-function createToggleRoots(name, initial, total, modifiers, selectors) {
-  const _total = parseInt(total || 2)
-  const _state = parseInt(initial || 0)
-  const _modifiers = modifiers?.split(' ') || []
-  const group = _modifiers.includes('group')
-  const isNarrow = _modifiers.includes('self')
-  let resetTo = 0
-  if (_modifiers.includes('linear')) resetTo = _total - 1
-  if (_modifiers.includes('sticky')) resetTo = 1
-  const config = {
-    name,
-    resetTo,
-    group,
-    isNarrow,
-    total: _total,
-    state: _state,
+function createToggleRoots(ruleValue, selectors) {
+  let { name, initial, numActive, states, at, modifiers } = toggleRootRe.exec(ruleValue).groups
+  if (name === undefined) return
+
+  let total
+  if (states !== undefined) {
+    states = states.split(/ +/)
+    total = states.length
+  } else {
+    total = parseInt(numActive || 1) + 1
+    states = [...Array(total).keys()].map(String)
   }
+
+  modifiers = modifiers?.split(/ +/) || []
+  const group = modifiers.includes('group')
+  const isNarrow = modifiers.includes('self')
+
+  let activeIndex = states.indexOf(initial)
+  if (activeIndex === -1) activeIndex = states.indexOf(at)
+  if (activeIndex === -1) activeIndex = 0
+
+  let resetTo = 0
+  if (modifiers.includes('linear')) resetTo = total - 1
+  if (modifiers.includes('sticky')) resetTo = 1
+
+  const config = { name, resetTo, group, isNarrow, total, states, activeIndex }
+
   document.querySelectorAll(selectors).forEach(el => {
     const id = `${name}-${uid()}`
     const elements = isNarrow ? [el] : withNextSiblings(el)
@@ -82,11 +103,13 @@ function createToggleRoots(name, initial, total, modifiers, selectors) {
 /**
  * Create toggle triggers for all elements matching `selectors`.
  * On click the elements will dispatch a custom `toggle` event
- * @param {string} name:        name of the toggle root to target
- * @param {int}    targetState: desired state
- * @param {string} selectors: CSS selectors of elements to be used as triggers
+ * @param {string} ruleValue: value of the `toggle-trigger` rule
+ * @param {string} selectors: CSS selector of elements to be used as triggers
  */
-function createToggleTriggers(name, targetState, selectors) {
+function createToggleTriggers(ruleValue, selectors) {
+  const { name, targetState } = toggleTriggerRe.exec(ruleValue).groups
+  if (name === undefined) return
+
   const dispatchToggleEvent = ({ target }) => {
     target.dispatchEvent(new CustomEvent('toggle', {
       bubbles: true,
@@ -116,7 +139,7 @@ function renderToggleState(toggleRootId) {
     const value = el.dataset.toggleRoot
     if (value && value !== toggleRootId) return
 
-    el.dataset.toggleVisibility = toggleRoot.state > 0 ? 'visible' : 'hidden'
+    el.dataset.toggleVisibility = toggleRoot.activeIndex > 0 ? 'visible' : 'hidden'
   })
 
   // Write the toggle state on elements selected by [data-toggle]
@@ -124,7 +147,7 @@ function renderToggleState(toggleRootId) {
      [data-toggle-root="${toggleRootId}"][data-toggle],
      [data-toggle-root="${toggleRootId}"] [data-toggle]
    `).forEach(el => {
-    el.dataset.toggle = `${toggleRoot.name} ${toggleRoot.state}`
+    el.dataset.toggle = `${toggleRoot.name} ${toggleRoot.states[toggleRoot.activeIndex]}`
   })
 }
 
@@ -174,32 +197,24 @@ Polyfill({
 Polyfill({
   declarations: ['toggle-root:*']
 }).doMatched(rules => rules.each(rule => {
-  const ruleValue = rule.getDeclaration()['toggle-root']
-  const { name, initial, total, modifiers } = toggleRootRe.exec(ruleValue).groups
-  if (name === undefined) return
-  createToggleRoots(name, initial, total, modifiers, rule.getSelectors())
+  createToggleRoots(rule.getDeclaration()['toggle-root'], rule.getSelectors())
 }))
 
 // Polyfill toggle triggers by targeting the `toggle-trigger` property
 Polyfill({
   declarations: ['toggle-trigger:*']
 }).doMatched(rules => rules.each(rule => {
-  const ruleValue = rule.getDeclaration()['toggle-trigger']
-  const { name, targetState } = toggleTriggerRe.exec(ruleValue).groups
-  if (name === undefined) return
-  createToggleTriggers(name, targetState, rule.getSelectors())
+  createToggleTriggers(rule.getDeclaration()['toggle-trigger'], rule.getSelectors())
 }))
 
 // Polyfill the shorthand `toggle` property that configures both roots and triggers
 Polyfill({
   declarations: ['toggle:*']
 }).doMatched(rules => rules.each(rule => {
-  const ruleValue = rule.getDeclaration()['toggle']
-  const { name, initial, total, modifiers } = toggleRootRe.exec(ruleValue).groups
-  if (name === undefined) return
   const selectors = rule.getSelectors()
-  createToggleRoots(name, initial, total, modifiers, selectors)
-  createToggleTriggers(name, undefined, selectors)
+  const ruleValue = rule.getDeclaration()['toggle']
+  createToggleRoots(ruleValue, selectors)
+  createToggleTriggers(ruleValue, selectors)
 }))
 
 // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
@@ -217,24 +232,22 @@ document.body.addEventListener('toggle', event => {
   if (toggleRoot.group) {
     for (let _id of Object.keys(toggleRoots)) {
       if (toggleRoots[_id].name === name) {
-        toggleRoots[_id].state = 0
+        toggleRoots[_id].activeIndex = 0
         renderToggleState(_id)
       }
     }
   }
 
   // Set the toggle to the target state or cycle through states
-  try {
-    targetState = parseInt(targetState)
-  } catch (e) { }
-  if (Number.isInteger(targetState)) {
-    toggleRoot.state = targetState
-  } else {
-    if (toggleRoot.state == toggleRoot.total - 1) {
-      toggleRoot.state = toggleRoot.resetTo
+  const nextIndex = toggleRoot.states.indexOf(targetState)
+  if (nextIndex === -1) {
+    if (toggleRoot.activeIndex == toggleRoot.total - 1) {
+      toggleRoot.activeIndex = toggleRoot.resetTo
     } else {
-      toggleRoot.state++
+      toggleRoot.activeIndex++
     }
+  } else {
+    toggleRoot.activeIndex = nextIndex
   }
 
   renderToggleState(id)
