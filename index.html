@@ -37,18 +37,12 @@
     }
 
     /* Tabs */
-    panel-tab:first-of-type {
-      /* The first tab also sets its initial state
-    to be active */
-      toggle: tab 1/1 group sticky;
-    }
-
     panel-tab {
       /* Each tab creates a sticky toggle
     (so once it’s open, clicking again won’t close it),
     opts into the group,
     and declares itself a toggle activator */
-      toggle: tab 1 group sticky;
+      toggle: tab 1 at 0 group sticky;
       display: block;
     }
 
@@ -61,44 +55,44 @@
       toggle-visibility: toggle tab;
     }
 
-    /* Multiple states */
+    /* Named states */
     .colors {
-      toggle-root: colors 3;
+      toggle-root: colors [alpha beta gamma delta] at gamma;
     }
 
     .colors button {
       toggle-trigger: colors;
     }
 
-    .colors button[data-target="0"] {
-      toggle-trigger: colors 0;
+    .colors button:nth-child(2) {
+      toggle-trigger: colors alpha;
     }
 
-    .colors button[data-target="1"] {
-      toggle-trigger: colors 1;
+    .colors button:nth-child(3) {
+      toggle-trigger: colors beta;
     }
 
-    .colors button[data-target="2"] {
-      toggle-trigger: colors 2;
+    .colors button:nth-child(4) {
+      toggle-trigger: colors gamma;
     }
 
-    .colors button[data-target="3"] {
-      toggle-trigger: colors 3;
+    .colors button:nth-child(5) {
+      toggle-trigger: colors delta;
     }
 
-    .colors p[data-toggle="colors 0"] {
+    .colors p[data-toggle="colors alpha"] {
       color: rebeccapurple;
     }
 
-    .colors p[data-toggle="colors 1"] {
+    .colors p[data-toggle="colors beta"] {
       color: green;
     }
 
-    .colors p[data-toggle="colors 2"] {
+    .colors p[data-toggle="colors gamma"] {
       color: blue;
     }
 
-    .colors p[data-toggle="colors 3"] {
+    .colors p[data-toggle="colors delta"] {
       color: red;
     }
   </style>
@@ -151,13 +145,13 @@
     <panel-card>Second panel content</panel-card>
   </panel-set>
 
-  <h2>Multiple states</h2>
+  <h2>Named states</h2>
   <div class="colors">
     <button>Cycle</button>
-    <button data-target="0">Purple</button>
-    <button data-target="1">Green</button>
-    <button data-target="2">Blue</button>
-    <button data-target="3">Red</button>
+    <button>Purple</button>
+    <button>Green</button>
+    <button>Blue</button>
+    <button>Red</button>
     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem minus aut praesentium? Tempore nemo dolorem
       libero neque repellat voluptatem amet ad iusto fugit a, aliquid labore sequi ea in voluptatibus!</p>
   </div>

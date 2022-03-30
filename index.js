@@ -22,15 +22,15 @@ const makeRegex = (parts, opts) => RegExp(parts.map(p => p.source).join(''), opt
 const toggleRootRe = makeRegex([
   /(?<name>[\w-]+)/,      // Toggle root name
   / */,                   // Whitespace
-  /((?<initial>\d+)\/)?/, // Integer followed by slash (optional)
-  /(?<numActive>\d*)?/,       // Number of active states (optional)
+  /((?<initial>\d+)\/)?/, // Initial state: Integer followed by slash (optional)
+  /(?<numActive>\d*)?/,   // Number of active states (optional)
   /(\[(?<states>.+)\])?/, // List of named states enclosed in [] (optional)
   / */,                   // Whitespace
   /(at +(?<at>[\w-]+))?/, // Literal 'at' followed by initial state (optional)
   / */,                   // Whitespace
   /(?<modifiers>.*)/      // Anything else (optional)
 ])
-const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>\d*)/
+const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>[\w-]*)/
 const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 
 let counter = 0
