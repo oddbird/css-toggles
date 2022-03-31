@@ -1,0 +1,100 @@
+/* Binary switch */
+.switch {
+  toggle: switch;
+}
+
+.content[data-toggle="switch 1"] {
+  /* Selector should be .content:toggle(switch 1) */
+  background-color: black;
+  color: white;
+}
+
+/* Accordion */
+.accordion>dt {
+  toggle: glossary;
+}
+
+.accordion>dd {
+  toggle-visibility: toggle glossary;
+}
+
+/* Tree view */
+.tree {
+  toggle: tree;
+}
+
+.tree+ul {
+  toggle-visibility: toggle tree;
+}
+
+/* Tabs */
+panel-tab {
+  /* Each tab creates a sticky toggle
+(so once it’s open, clicking again won’t close it),
+opts into the group,
+and declares itself a toggle activator */
+  toggle: tab 1 at 0 group sticky;
+  display: block;
+}
+
+panel-tab[data-toggle="tab 1"] {
+  /* Selector should be panel-tab:toggle(tab 1) */
+  font-weight: bold;
+}
+
+panel-card {
+  toggle-visibility: toggle tab;
+}
+
+/* Named states */
+.colors {
+  toggle-root: colors [purple green blue red] at blue;
+}
+
+.colors button {
+  toggle-trigger: colors;
+}
+
+.colors button:nth-child(2) {
+  toggle-trigger: colors purple;
+}
+
+.colors button:nth-child(3) {
+  toggle-trigger: colors green;
+}
+
+.colors button:nth-child(4) {
+  toggle-trigger: colors blue;
+}
+
+.colors button:nth-child(5) {
+  toggle-trigger: colors red;
+}
+
+.colors p[data-toggle="colors purple"] {
+  color: rebeccapurple;
+}
+
+.colors p[data-toggle="colors green"] {
+  color: green;
+}
+
+.colors p[data-toggle="colors blue"] {
+  color: blue;
+}
+
+.colors p[data-toggle="colors red"] {
+  color: red;
+}
+
+
+/* layout & style */
+* { box-sizing: border-box; }
+html {
+  display: grid;
+  justify-content: center;
+}
+body {
+  margin: 1em;
+  max-width: 80ch;
+}
