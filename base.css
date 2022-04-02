@@ -1,0 +1,14 @@
+/* layout & style */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  display: grid;
+  justify-content: center;
+}
+
+body {
+  margin: 1em;
+  max-width: 80ch;
+}
