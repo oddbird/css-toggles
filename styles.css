@@ -87,6 +87,7 @@ panel-card {
   color: red;
 }
 
+/* State machines */
 .request {
   toggle-root: machine(request);
 }
