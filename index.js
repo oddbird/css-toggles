@@ -10,8 +10,11 @@
  * - Should elements with `toggle-visibility` be hidden on load if the state is 0? YES
  * - toggle modes (default, sticky, linear)
  * - wide and narrow scopes
+ * - `@machine` definitions
  *
  * TODO
+ * - Don't break CSS parsing after `@machine`
+ * - Do something with machine(***, strict)
  * - `toggle-group`
  * - support dynamically added elements
  * - decouple from CSS rule order (rely only on markup)
@@ -19,6 +22,7 @@
 
 /** Build a regex from an array of parts */
 const makeRegex = (parts, opts) => RegExp(parts.map(p => p.source).join(''), opts)
+
 const toggleRootRe = makeRegex([
   /(?<name>[\w-]+)/,      // Toggle root name
   / */,                   // Whitespace
@@ -28,15 +32,29 @@ const toggleRootRe = makeRegex([
   / */,                   // Whitespace
   /(at +(?<at>[\w-]+))?/, // Literal 'at' followed by initial state (optional)
   / */,                   // Whitespace
-  /(?<modifiers>.*)/      // Anything else (optional)
+  /(?<modifiers>.*)/,     // Anything else (optional)
 ])
-const toggleTriggerRe = /(?<name>[\w-]+) *(?<targetState>[\w-]*)/
+const toggleRootMachineRe = makeRegex([
+  /((?<name>[\w-]+) +)?/,  // Toggle root name (optional)
+  /(machine\((?<machine>[\w-]+)(?<strict> *, *strict)?\))/, // State machine name
+  / */,                   // Whitespace
+  /(at +(?<at>[\w-]+))?/, // Literal 'at' followed by initial state (optional)
+  / */,                   // Whitespace
+  /(?<modifiers>.*)/,     // Anything else (optional)
+])
+const toggleTriggerRe = makeRegex([
+  /(?<name>[\w-]+)/,                    // Target toggle root
+  / */,                                 // Whitespace
+  /(do[ \(](?<transition>[\w-]+)\)?)?/, // Transition name wrapped in `do()` (optional)
+  /(?<targetState>[\w-]*)/,             // Target state name (optional)
+])
 const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 
 let counter = 0
 const uid = () => counter++
 
 const toggleRoots = {}
+const toggleMachines = {}
 
 /**
  * Strip the `[data-toggle="*"]` segment of a selector.
@@ -65,11 +83,19 @@ function withNextSiblings(element) {
  * @param {string} selectors: CSS selector of elements to be used as roots
 */
 function createToggleRoots(ruleValue, selectors) {
-  let { name, initial, numActive, states, at, modifiers } = toggleRootRe.exec(ruleValue).groups
+  const regex = (ruleValue.includes('machine(')) ? toggleRootMachineRe : toggleRootRe
+  let {
+    name, machine, strict, initial, numActive, states, at, modifiers
+  } = regex.exec(ruleValue).groups
+  name = name || machine
   if (name === undefined) return
 
   let total
-  if (states !== undefined) {
+  const machineDef = toggleMachines[machine]
+  if (machineDef !== undefined) {
+    states = Object.keys(machineDef.states)
+    total = states.length
+  } else if (states !== undefined) {
     states = states.split(/ +/)
     total = states.length
   } else {
@@ -89,7 +115,7 @@ function createToggleRoots(ruleValue, selectors) {
   if (modifiers.includes('linear')) resetTo = total - 1
   if (modifiers.includes('sticky')) resetTo = 1
 
-  const config = { name, resetTo, group, isNarrow, total, states, activeIndex }
+  const config = { name, resetTo, group, isNarrow, total, states, machine, activeIndex, strict: Boolean(strict) }
 
   document.querySelectorAll(selectors).forEach(el => {
     const id = `${name}-${uid()}`
@@ -107,13 +133,13 @@ function createToggleRoots(ruleValue, selectors) {
  * @param {string} selectors: CSS selector of elements to be used as triggers
  */
 function createToggleTriggers(ruleValue, selectors) {
-  const { name, targetState } = toggleTriggerRe.exec(ruleValue).groups
+  const { name, targetState, transition } = toggleTriggerRe.exec(ruleValue).groups
   if (name === undefined) return
 
   const dispatchToggleEvent = ({ target }) => {
     target.dispatchEvent(new CustomEvent('toggle', {
       bubbles: true,
-      detail: { toggleRoot: name, targetState }
+      detail: { toggleRoot: name, targetState, transition }
     }))
   }
 
@@ -168,6 +194,17 @@ styleSheet.innerHTML = `
 `
 document.head.append(styleSheet)
 
+// Wait for all stylesheets to be parsed and then find and parse @machine definitions
+p = Polyfill({})
+p._defer(
+  () => p._stylesheets && p._stylesheets.length && p._stylesheets[0].text,
+  () => p._stylesheets.forEach(sheet => {
+    parseToggleMachines(sheet.text).forEach(machine => {
+      toggleMachines[machine.machine] = machine
+    })
+  })
+)
+
 // Get a list of all selectors that use `data-toggle` and actually set the attribute in the DOM.
 // The attribute is used instead of the `:toggle()` pseudoclass.
 Polyfill({
@@ -220,13 +257,15 @@ Polyfill({
 // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
 document.body.addEventListener('toggle', event => {
   const { target } = event
-  let { toggleRoot: name, targetState } = event.detail
+  let { toggleRoot: name, targetState, transition } = event.detail
 
   // Determine what toggle root is in scope
   const toggleRootElement = target.closest(`[data-toggle-root^="${name}-"]`)
   const id = toggleRootElement?.dataset?.toggleRoot || null
   const toggleRoot = toggleRoots[id]
   if (toggleRoot === undefined) return
+
+  const currentState = toggleRoot.states[toggleRoot.activeIndex]
 
   // Reset all other toggles if we're on a group
   if (toggleRoot.group) {
@@ -236,6 +275,13 @@ document.body.addEventListener('toggle', event => {
         renderToggleState(_id)
       }
     }
+  }
+
+  // Let the state machine transition to the next state if applicable
+  const machine = toggleMachines[toggleRoot.machine]
+  if (machine !== undefined) {
+    targetState = machine.states[currentState][transition]
+    if (targetState === undefined) return
   }
 
   // Set the toggle to the target state or cycle through states

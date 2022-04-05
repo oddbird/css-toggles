@@ -86,3 +86,55 @@ panel-card {
 .colors p[data-toggle="colors red"] {
   color: red;
 }
+
+.request {
+  toggle-root: machine(request);
+}
+
+.request button[data-do="try"] {
+  toggle-trigger: request do(try);
+}
+
+.request button[data-do="resolve"] {
+  toggle-trigger: request do(resolve);
+}
+
+.request button[data-do="reject"] {
+  toggle-trigger: request do(reject);
+}
+
+.request .status[data-toggle="request idle"] {
+  background-color: grey;
+}
+
+.request .status[data-toggle="request loading"] {
+  background-color: yellow;
+}
+
+.request .status[data-toggle="request failure"] {
+  background-color: red;
+}
+
+.request .status[data-toggle="request success"] {
+  background-color: green;
+}
+.request .status:after {
+  content: " " attr(data-toggle)
+}
+
+@machine request {
+  idle {
+    try: loading;
+  }
+
+  loading {
+    resolve: success;
+    reject: failure;
+  }
+
+  failure {
+    try: loading;
+  }
+
+  success {}
+}
