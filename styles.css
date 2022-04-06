@@ -103,21 +103,41 @@ html:toggle(mode dark) {
 }
 
 /* Tabs */
-panel-tab {
-  /* Each tab creates a sticky toggle
+panel-set {
+  display: grid;
+  grid-template: 'tab tab tab' auto 'card card card' auto / auto auto 1fr;
+}
+
+/* Each tab creates a sticky toggle
 (so once it’s open, clicking again won’t close it),
 opts into the group,
 and declares itself a toggle activator */
+panel-tab {
   toggle: tab 1 at 0 group sticky;
-  display: block;
+  grid-row: tab;
+  padding: 0.5em 1em;
+  cursor: pointer;
 }
 
+/* first tab toggled by default */
+/* panel-tab:first-child {
+  toggle: tab 1 at 1 group sticky;
+} */
+
 panel-tab:toggle(tab) {
-  font-weight: bold;
+  background-color: var(--callout);
 }
 
 panel-card {
   toggle-visibility: toggle tab;
+  grid-area: card;
+  padding: 1em;
+  background-color: var(--callout);
+}
+
+panel-card pre {
+  padding: 0;
+  border: 0;
 }
 
 /* Named states */

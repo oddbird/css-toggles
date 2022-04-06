@@ -23,7 +23,7 @@
 
   <section>
     <h2>Global color toggle</h2>
-    <button class="mode-btn">cycle colors</button>
+    <button class="mode-btn">colors</button>
     <pre>html {
   toggle-root: mode [auto light dark];
 }
@@ -117,12 +117,23 @@ html:toggle(mode dark) { ... }
   </section>
 
   <section>
-    <h2>Tab and exclusive accordions</h2>
+    <h2>Tabs or exclusive accordions</h2>
     <panel-set>
-      <panel-tab>First tab</panel-tab>
-      <panel-card>First panel content</panel-card>
-      <panel-tab>Second tab</panel-tab>
-      <panel-card>Second panel content</panel-card>
+      <panel-tab>Establishing Tabs</panel-tab>
+      <panel-card><pre>panel-tab {
+  toggle: tab 1 at 0 group sticky;
+  grid-row: tab;
+}</pre></panel-card>
+
+      <panel-tab>Styling Content</panel-tab>
+      <panel-card><pre>panel-tab:toggle(tab) {
+  background-color: var(--callout);
+}
+
+panel-card {
+  toggle-visibility: toggle tab;
+  grid-area: card;
+}</pre></panel-card>
     </panel-set>
   </section>
 
