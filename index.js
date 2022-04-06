@@ -19,7 +19,7 @@
  * - support dynamically added elements
  * - decouple from CSS rule order (rely only on markup)
 */
-import * as css from 'https://cdn.jsdelivr.net/npm/css-tree'
+import * as css from 'https://cdn.jsdelivr.net/npm/css-tree@2.1'
 
 /** Build a regex from an array of parts */
 const makeRegex = (parts, opts) => RegExp(parts.map(p => p.source).join(''), opts)
