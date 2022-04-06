@@ -31,7 +31,7 @@ body {
     [full-start] minmax(0, 1fr)
     [main-start] minmax(0, 75ch) [main-end]
     minmax(0, 1fr) [full-end];
-  margin: 0;
+  margin: 0 0 3em;
 }
 
 /* layout */
@@ -97,4 +97,17 @@ pre {
 
 dd {
   margin: 1em;
+}
+
+.issue {
+  font-style: italic;
+}
+
+.issue a:any-link {
+  font-style: normal;
+}
+
+.issue::before {
+  content: '⚠️ ';
+  font-style: normal;
 }

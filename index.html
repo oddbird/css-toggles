@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 
 <body>
@@ -18,6 +19,7 @@
       <a href="https://css.oddbird.net/toggles/explainer/">Explainer</a>
       <a href="https://tabatkins.github.io/css-toggle/">Draft Spec</a>
       <a href="https://github.com/oddbird/css-toggles">Polyfill</a>
+      <a href="https://github.com/oddbird/css-toggles/issues">Issues</a>
     </nav>
   </header>
 
@@ -118,6 +120,10 @@ html:toggle(mode dark) { ... }
 
   <section>
     <h2>Tabs or exclusive accordions</h2>
+    <p class="issue">
+      <a href="https://github.com/oddbird/css-toggles/issues/9">issue 9</a>:
+      Not possible to change initial state for one toggle in a group.
+    </p>
     <panel-set>
       <panel-tab>Establishing Tabs</panel-tab>
       <panel-card><pre>panel-tab {
@@ -141,12 +147,27 @@ panel-card {
     <h2>Named states</h2>
     <div class="colors">
       <button>Cycle</button>
-      <button>Purple</button>
-      <button>Green</button>
-      <button>Blue</button>
-      <button>Red</button>
-      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem minus aut praesentium? Tempore nemo dolorem
-        libero neque repellat voluptatem amet ad iusto fugit a, aliquid labore sequi ea in voluptatibus!</p>
+      <button class="grape">Grape</button>
+      <button class="green">Green</button>
+      <button class="blue">Blue</button>
+      <button class="red">Red</button>
+      <pre class="show-colors">.colors {
+  toggle-root: colors [grape green blue red] at blue;
+}
+
+.colors button {
+  toggle-trigger: colors;
+}
+
+/* for each color */
+.colors button.grape {
+  toggle-trigger: colors grape;
+}
+
+.show-colors:toggle(colors grape) {
+  background-color: var(--grape-9);
+}
+</pre>
     </div>
   </section>
 

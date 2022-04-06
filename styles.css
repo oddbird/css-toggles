@@ -142,43 +142,48 @@ panel-card pre {
 
 /* Named states */
 .colors {
-  toggle-root: colors [purple green blue red] at blue;
+  toggle-root: colors [grape green blue red] at blue;
 }
 
 .colors button {
   toggle-trigger: colors;
 }
 
-.colors button:nth-child(2) {
-  toggle-trigger: colors purple;
+.colors button.grape {
+  toggle-trigger: colors grape;
 }
 
-.colors button:nth-child(3) {
+.colors button.green {
   toggle-trigger: colors green;
 }
 
-.colors button:nth-child(4) {
+.colors button.blue {
   toggle-trigger: colors blue;
 }
 
-.colors button:nth-child(5) {
+.colors button.red {
   toggle-trigger: colors red;
 }
 
-.colors p:toggle(colors purple) {
-  color: rebeccapurple;
+.show-colors {
+  background: var(--gray-9);
+  color: var(--gray-1);
 }
 
-.colors p:toggle(colors green) {
-  color: green;
+.show-colors:toggle(colors grape) {
+  background-color: var(--grape-9);
 }
 
-.colors p:toggle(colors blue) {
-  color: blue;
+.show-colors:toggle(colors green) {
+  background-color: var(--green-9);
 }
 
-.colors p:toggle(colors red) {
-  color: red;
+.show-colors:toggle(colors blue) {
+  background-color: var(--blue-9);
+}
+
+.show-colors:toggle(colors red) {
+  background-color: var(--red-9);
 }
 
 /* State machines */
