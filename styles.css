@@ -88,6 +88,23 @@ panel-card {
 }
 
 /* State machines */
+@machine request {
+  idle {
+    try: loading;
+  }
+
+  loading {
+    resolve: success;
+    reject: failure;
+  }
+
+  failure {
+    try: loading;
+  }
+
+  success {}
+}
+
 .request {
   toggle-root: machine(request);
 }
@@ -119,23 +136,7 @@ panel-card {
 .request .status[data-toggle="request success"] {
   background-color: green;
 }
+
 .request .status:after {
-  content: " " attr(data-toggle)
-}
-
-@machine request {
-  idle {
-    try: loading;
-  }
-
-  loading {
-    resolve: success;
-    reject: failure;
-  }
-
-  failure {
-    try: loading;
-  }
-
-  success {}
+  content: attr(data-toggle);
 }

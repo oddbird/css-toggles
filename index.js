@@ -11,14 +11,15 @@
  * - toggle modes (default, sticky, linear)
  * - wide and narrow scopes
  * - `@machine` definitions
+ * - Don't break CSS parsing after `@machine`
  *
  * TODO
- * - Don't break CSS parsing after `@machine`
  * - Do something with machine(***, strict)
  * - `toggle-group`
  * - support dynamically added elements
  * - decouple from CSS rule order (rely only on markup)
 */
+import * as css from 'https://cdn.jsdelivr.net/npm/css-tree'
 
 /** Build a regex from an array of parts */
 const makeRegex = (parts, opts) => RegExp(parts.map(p => p.source).join(''), opts)
@@ -122,7 +123,6 @@ function createToggleRoots(ruleValue, selectors) {
     const elements = isNarrow ? [el] : withNextSiblings(el)
     elements.forEach(el => { el.dataset.toggleRoot = id })
     toggleRoots[id] = { ...config }
-    renderToggleState(id)
   })
 }
 
@@ -177,82 +177,141 @@ function renderToggleState(toggleRootId) {
   })
 }
 
-// Insert styles for visually hidden content
-const styleSheet = document.createElement('style')
-styleSheet.innerHTML = `
-[data-toggle-visibility='hidden']:not(:focus):not(:focus-within) {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important; /* Fix for https://github.com/twbs/bootstrap/issues/25686 */
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
+/**
+ * Parse `@machine` at-rules and convert them to machine objects
+ * @param {css-tree node} node
+ */
+function toggleMachineWalker(node) {
+  if (!(node.type === 'Atrule' && node.name === 'machine')) return
+  const name = node.prelude.value
+  const states = {}
+  node.block.children.forEach(rule => {
+    states[rule.prelude.value] = Object.fromEntries(
+      rule.block.children.map(decl => [decl.property, decl.value.value])
+    )
+  })
+  toggleMachines[name] = { name, states }
 }
-`
-document.head.append(styleSheet)
 
-// Wait for all stylesheets to be parsed and then find and parse @machine definitions
-p = Polyfill({})
-p._defer(
-  () => p._stylesheets && p._stylesheets.length && p._stylesheets[0].text,
-  () => p._stylesheets.forEach(sheet => {
-    parseToggleMachines(sheet.text).forEach(machine => {
-      toggleMachines[machine.machine] = machine
-    })
-  })
-)
-
-// Get a list of all selectors that use `data-toggle` and actually set the attribute in the DOM.
-// The attribute is used instead of the `:toggle()` pseudoclass.
-Polyfill({
-  selectors: ['[data-toggle=',]
-}).doMatched(rules => rules.each(rule => {
-  let selectors = new Set(rule._rule.selectors.map(stripDataToggle))
+/**
+ * Parse rules that use a `data-toggle` selector and actually set the attribute in the DOM.
+ * The attribute is used instead of the `:toggle()` pseudoclass.
+ * @param {css-tree node} node
+ */
+function togglePseudoClassWalker(node) {
+  if (!(node.type === 'Rule' && node.prelude.value.includes('[data-toggle='))) return
+  let selectors = new Set(node.prelude.value.split(',').map(stripDataToggle))
   selectors = Array.from(selectors).join(',')
-  document.querySelectorAll(selectors).forEach(el => {
-    el.dataset.toggle = ''
-  })
-}))
+  document.querySelectorAll(selectors).forEach(el => el.dataset.toggle = '')
+}
 
-// Add `data-toggle-visibility` attributes to elements that use the `toggle-visibility` property
-Polyfill({
-  declarations: ['toggle-visibility:*',]
-}).doMatched(rules => rules.each(rule => {
-  const ruleValue = rule.getDeclaration()['toggle-visibility']
-  const { name } = toggleRootRe.exec(ruleValue).groups
+/**
+ * Parse declarations that use the `toggle-visibility` property and set the
+ * `data-toggle-visibility` attribute
+ * @param {css-tree node} node
+ */
+function toggleVisibilityWalker(node) {
+  if (!(node.type === 'Declaration' && node.property === 'toggle-visibility')) return
+  const { name } = toggleVisibilityRe.exec(node.value.value).groups
   if (name === undefined) return
 
-  document.querySelectorAll(rule.getSelectors()).forEach(el => {
+  document.querySelectorAll(this.rule.prelude.value).forEach(el => {
     el.dataset.toggleVisibility = ''
   })
-}))
+}
 
-// Polyfill toggle roots by targeting the `toggle-root` property
-Polyfill({
-  declarations: ['toggle-root:*']
-}).doMatched(rules => rules.each(rule => {
-  createToggleRoots(rule.getDeclaration()['toggle-root'], rule.getSelectors())
-}))
+/**
+ * Parse declarations that use the `toggle-root` property and create toggle root records.
+ * @param {css-tree node} node
+ */
+function toggleRootWalker(node) {
+  if (!(node.type === 'Declaration' && node.property === 'toggle-root')) return
+  createToggleRoots(node.value.value, this.rule.prelude.value)
+}
 
-// Polyfill toggle triggers by targeting the `toggle-trigger` property
-Polyfill({
-  declarations: ['toggle-trigger:*']
-}).doMatched(rules => rules.each(rule => {
-  createToggleTriggers(rule.getDeclaration()['toggle-trigger'], rule.getSelectors())
-}))
+/**
+ * Parse declarations that use the `toggle-trigger` property and initialize trigger logic.
+ * @param {css-tree node} node
+ */
+function toggleTriggerWalker(node) {
+  if (!(node.type === 'Declaration' && node.property === 'toggle-trigger')) return
+  createToggleTriggers(node.value.value, this.rule.prelude.value)
+}
 
-// Polyfill the shorthand `toggle` property that configures both roots and triggers
-Polyfill({
-  declarations: ['toggle:*']
-}).doMatched(rules => rules.each(rule => {
-  const selectors = rule.getSelectors()
-  const ruleValue = rule.getDeclaration()['toggle']
+/**
+ * Parse declarations that use the `toggle` shorthand property and initialize roots and triggers.
+ * @param {css-tree node} node
+ */
+function toggleWalker(node) {
+  if (!(node.type === 'Declaration' && node.property === 'toggle')) return
+  const selectors = this.rule.prelude.value
+  const ruleValue = node.value.value
   createToggleRoots(ruleValue, selectors)
   createToggleTriggers(ruleValue, selectors)
-}))
+}
+/**
+ * Execute all walkers on the text source of a stylesheet.
+ * @param {string} sheetSrc
+ * @param {string} url
+ */
+function initStylesheet(sheetSrc, url) {
+  const ast = css.parse(sheetSrc, {
+    parseAtrulePrelude: false, parseRulePrelude: false, parseValue: false
+  })
+  css.walk(ast, function (node) {
+    toggleMachineWalker.bind(this)(node)
+    togglePseudoClassWalker.bind(this)(node)
+    toggleVisibilityWalker.bind(this)(node)
+    toggleRootWalker.bind(this)(node)
+    toggleTriggerWalker.bind(this)(node)
+    toggleWalker.bind(this)(node)
+  })
+}
+
+/**
+ * Parse and transpile inline <style> tags
+ * @param {HTMLElement} el
+ */
+function handleStyleTag(el) {
+  const newSrc = initStylesheet(el.innerHTML)
+  if (!newSrc) return
+  el.innerHTML = newSrc
+}
+
+/**
+ * Parse and transpile <link rel="stylesheet">
+ * @param {HTMLElement} el
+ */
+async function handleLinkedStylesheet(el) {
+  if (el.rel !== "stylesheet") return
+  const srcUrl = new URL(el.href, document.baseURI)
+  if (srcUrl.origin !== location.origin) return
+  const src = await fetch(srcUrl.toString()).then((r) => r.text())
+
+  const newSrc = initStylesheet(src, srcUrl.toString())
+  if (!newSrc) return
+
+  const blob = new Blob([newSrc], { type: "text/css" })
+  el.href = URL.createObjectURL(blob)
+}
+
+// Insert styles for visually hidden content
+document.head.insertAdjacentHTML(
+  'beforeend',
+  `<style>
+  [data-toggle-visibility='hidden']:not(:focus):not(:focus-within) {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important; /* Fix for https://github.com/twbs/bootstrap/issues/25686 */
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  </style>`
+)
 
 // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
 document.body.addEventListener('toggle', event => {
@@ -298,3 +357,8 @@ document.body.addEventListener('toggle', event => {
 
   renderToggleState(id)
 })
+
+// Kick off the polyfill by parsing all inline and linked stylesheets
+document.querySelectorAll("style").forEach(handleStyleTag)
+await Promise.all([...document.querySelectorAll("link")].map(handleLinkedStylesheet))
+Object.keys(toggleRoots).forEach(renderToggleState)
