@@ -31,7 +31,7 @@ body {
     [full-start] minmax(0, 1fr)
     [main-start] minmax(0, 75ch) [main-end]
     minmax(0, 1fr) [full-end];
-  margin: 0 0 3em;
+  margin: 0;
 }
 
 /* layout */
@@ -39,8 +39,11 @@ header, section {
   padding: 1em;
 }
 
-header {
+header, footer {
   grid-column: full;
+}
+
+header {
   background: linear-gradient(to top right, var(--bg), var(--grad));
   border-block-end: thin dotted var(--text);
   text-shadow: 1px 1px 0 var(--bg);
@@ -64,6 +67,19 @@ nav a:any-link {
 
 section {
   grid-column: main;
+}
+
+footer {
+  border-block-start: thin dotted var(--text);
+  background: linear-gradient(to bottom right, var(--bg), var(--grad));
+  padding: 2em 0;
+  display: grid;
+  grid-template-columns: minmax(0, 75ch);
+  justify-content: center;
+}
+
+footer p {
+  padding-inline: 1em;
 }
 
 /* links & buttons */
