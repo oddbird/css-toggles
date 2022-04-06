@@ -11,6 +11,15 @@
 /* Accordion */
 .accordion>dt {
   toggle: glossary;
+  display: list-item;
+}
+
+.accordion>dt::marker {
+  content: var(--marker, '👉🏽');
+}
+
+.accordion>dt:toggle(glossary 1)::marker {
+  --marker: '👇🏽';
 }
 
 .accordion>dd {

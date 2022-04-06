@@ -21,6 +21,25 @@
 */
 import * as css from 'https://cdn.jsdelivr.net/npm/css-tree@2.1'
 
+// https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements#index
+const pseudoElements = [
+  'after',
+  'backdrop',
+  'before',
+  'cue',
+  'cue-region',
+  'first-letter',
+  'first-line',
+  'file-selector-button',
+  'grammar-error',
+  'marker',
+  'placeholder',
+  'selection',
+  'spelling-error',
+  'target-text',
+].join('|')
+const pseudoElementRe = RegExp(`::?(${pseudoElements})`)
+
 /** Build a regex from an array of parts */
 const makeRegex = (parts, opts) => RegExp(parts.map(p => p.source).join(''), opts)
 
@@ -199,9 +218,13 @@ function togglePseudoClassWalker(node) {
 
   // Set up `data-toggle` attribute to polyfill behavior
   let baseSelectors = new Set(
-    selector.split(',').map(sel => sel.replace(togglePseudoClassRe, ''))
+    selector.split(',').map(sel => (
+      sel.trim()
+        .replace(togglePseudoClassRe, '')
+        .replace(pseudoElementRe, '')
+    ))
   )
-  baseSelectors = Array.from(baseSelectors).join(',')
+  baseSelectors = [...baseSelectors].join(',')
   document.querySelectorAll(baseSelectors).forEach(el => el.dataset.toggle = '')
 
   // Mutate the AST to convert the pseudoclass into `data-toggle` selector
