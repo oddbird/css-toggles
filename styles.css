@@ -3,8 +3,7 @@
   toggle: switch;
 }
 
-.content[data-toggle="switch 1"] {
-  /* Selector should be .content:toggle(switch 1) */
+.content:toggle(switch 1) {
   background-color: black;
   color: white;
 }
@@ -37,8 +36,7 @@ and declares itself a toggle activator */
   display: block;
 }
 
-panel-tab[data-toggle="tab 1"] {
-  /* Selector should be panel-tab:toggle(tab 1) */
+panel-tab:toggle(tab 1) {
   font-weight: bold;
 }
 
@@ -71,19 +69,19 @@ panel-card {
   toggle-trigger: colors red;
 }
 
-.colors p[data-toggle="colors purple"] {
+.colors p:toggle(colors purple) {
   color: rebeccapurple;
 }
 
-.colors p[data-toggle="colors green"] {
+.colors p:toggle(colors green) {
   color: green;
 }
 
-.colors p[data-toggle="colors blue"] {
+.colors p:toggle(colors blue) {
   color: blue;
 }
 
-.colors p[data-toggle="colors red"] {
+.colors p:toggle(colors red) {
   color: red;
 }
 
@@ -121,19 +119,19 @@ panel-card {
   toggle-trigger: request do(reject);
 }
 
-.request .status[data-toggle="request idle"] {
+.request .status:toggle(request idle) {
   background-color: grey;
 }
 
-.request .status[data-toggle="request loading"] {
+.request .status:toggle(request loading) {
   background-color: yellow;
 }
 
-.request .status[data-toggle="request failure"] {
+.request .status:toggle(request failure) {
   background-color: red;
 }
 
-.request .status[data-toggle="request success"] {
+.request .status:toggle(request success) {
   background-color: green;
 }
 

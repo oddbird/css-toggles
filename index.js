@@ -6,12 +6,12 @@
  * - `toggle` shorthand property
  * - `toggle-trigger` property
  * - `toggle-visibility` property
- * - `:toggle()` selector
  * - Should elements with `toggle-visibility` be hidden on load if the state is 0? YES
  * - toggle modes (default, sticky, linear)
  * - wide and narrow scopes
  * - `@machine` definitions
  * - Don't break CSS parsing after `@machine`
+ * - Transpile `:toggle()`
  *
  * TODO
  * - Do something with machine(***, strict)
@@ -50,18 +50,13 @@ const toggleTriggerRe = makeRegex([
   /(?<targetState>[\w-]*)/,             // Target state name (optional)
 ])
 const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
+const togglePseudoClassRe = /:toggle\((?<value>.+)\)/
 
 let counter = 0
 const uid = () => counter++
 
 const toggleRoots = {}
 const toggleMachines = {}
-
-/**
- * Strip the `[data-toggle="*"]` segment of a selector.
- * Used to determine a base selector for DOM nodes that need polyfilling
- */
-const stripDataToggle = value => value.replace(/\[data-toggle=['"].*['"]\]/, '')
 
 /**
  * Get a list of the `element` and its next siblings
@@ -194,15 +189,26 @@ function toggleMachineWalker(node) {
 }
 
 /**
- * Parse rules that use a `data-toggle` selector and actually set the attribute in the DOM.
- * The attribute is used instead of the `:toggle()` pseudoclass.
+ * Parse and mutate rules that use a `:toggle()` pseudoclass.
  * @param {css-tree node} node
+ * @returns {bool} indicates if the AST was mutated and transpilation is required
  */
 function togglePseudoClassWalker(node) {
-  if (!(node.type === 'Rule' && node.prelude.value.includes('[data-toggle='))) return
-  let selectors = new Set(node.prelude.value.split(',').map(stripDataToggle))
-  selectors = Array.from(selectors).join(',')
-  document.querySelectorAll(selectors).forEach(el => el.dataset.toggle = '')
+  const selector = node?.prelude?.value || ''
+  if (!(node.type === 'Rule' && selector.match(togglePseudoClassRe))) return
+
+  // Set up `data-toggle` attribute to polyfill behavior
+  let baseSelectors = new Set(
+    selector.split(',').map(sel => sel.replace(togglePseudoClassRe, ''))
+  )
+  baseSelectors = Array.from(baseSelectors).join(',')
+  document.querySelectorAll(baseSelectors).forEach(el => el.dataset.toggle = '')
+
+  // Mutate the AST to convert the pseudoclass into `data-toggle` selector
+  node.prelude.value = selector.replace(togglePseudoClassRe, '[data-toggle="$1"]')
+
+  // Indicate transpilation is required
+  return true
 }
 
 /**
@@ -253,19 +259,22 @@ function toggleWalker(node) {
  * Execute all walkers on the text source of a stylesheet.
  * @param {string} sheetSrc
  * @param {string} url
+ * @returns {string} transpiled source, or empty string if no transpilation is required
  */
 function initStylesheet(sheetSrc, url) {
+  let transpilationRequired = false
   const ast = css.parse(sheetSrc, {
     parseAtrulePrelude: false, parseRulePrelude: false, parseValue: false
   })
   css.walk(ast, function (node) {
     toggleMachineWalker.bind(this)(node)
-    togglePseudoClassWalker.bind(this)(node)
+    transpilationRequired |= togglePseudoClassWalker.bind(this)(node)
     toggleVisibilityWalker.bind(this)(node)
     toggleRootWalker.bind(this)(node)
     toggleTriggerWalker.bind(this)(node)
     toggleWalker.bind(this)(node)
   })
+  return transpilationRequired ? css.generate(ast) : ''
 }
 
 /**
@@ -286,7 +295,7 @@ async function handleLinkedStylesheet(el) {
   if (el.rel !== "stylesheet") return
   const srcUrl = new URL(el.href, document.baseURI)
   if (srcUrl.origin !== location.origin) return
-  const src = await fetch(srcUrl.toString()).then((r) => r.text())
+  const src = await fetch(srcUrl.toString()).then(r => r.text())
 
   const newSrc = initStylesheet(src, srcUrl.toString())
   if (!newSrc) return
@@ -361,4 +370,6 @@ document.body.addEventListener('toggle', event => {
 // Kick off the polyfill by parsing all inline and linked stylesheets
 document.querySelectorAll("style").forEach(handleStyleTag)
 await Promise.all([...document.querySelectorAll("link")].map(handleLinkedStylesheet))
+
+// Finally update the DOM to match all toggle root states
 Object.keys(toggleRoots).forEach(renderToggleState)
