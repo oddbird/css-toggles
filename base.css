@@ -1,14 +1,100 @@
-/* layout & style */
+/* base */
 * {
   box-sizing: border-box;
 }
 
 html {
-  display: grid;
-  justify-content: center;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background-color: var(--bg);
+
+  --brand: var(--pink-9);
+  --bg: var(--gray-1);
+  --callout: var(--gray-2);
+  --text: var(--gray-9);
+  --grad: var(--violet-1);
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    --brand: var(--pink-3);
+    --bg: var(--gray-9);
+    --callout: var(--gray-8);
+    --text: var(--gray-2);
+    --grad: var(--violet-9);
+  }
 }
 
 body {
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(0, 1fr)
+    [main-start] minmax(0, 75ch) [main-end]
+    minmax(0, 1fr) [full-end];
+  margin: 0;
+}
+
+/* layout */
+header, section {
+  padding: 1em;
+}
+
+header {
+  grid-column: full;
+  background: linear-gradient(to top right, var(--bg), var(--grad));
+  border-block-end: thin dotted var(--text);
+  text-shadow: 1px 1px 0 var(--bg);
+  display: grid;
+  gap: 0.5em;
+}
+
+h1 {
+  margin: 0;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
+nav a:any-link {
+  padding: 0.25em;
+}
+
+section {
+  grid-column: main;
+}
+
+/* links & buttons */
+[href*='://']::after {
+  content: ' ↗';
+}
+
+a:any-link {
+  color: var(--brand);
+}
+
+button {
+  background-color: var(--brand);
+  color: var(--bg);
+  border: thin solid var(--text);
+  border-radius: 0.25em 0.5em;
+  cursor: pointer;
+  padding: 0.5em 1em;
+  font: inherit;
+}
+
+/* other type */
+pre {
+  border: thin dotted gray;
+  background-color: var(--callout);
+  padding: 1em;
+  font-family: var(--font-mono);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+dd {
   margin: 1em;
-  max-width: 80ch;
 }

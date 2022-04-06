@@ -1,25 +1,77 @@
-/* Binary switch */
-.switch {
-  toggle: switch;
+/* Root color scheme */
+html {
+  toggle-root: mode [auto light dark];
 }
 
-.content:toggle(switch) {
-  background-color: black;
-  color: white;
+html:toggle(mode light) {
+  --mode: 'light';
+  --brand: var(--violet-9);
+  --bg: var(--gray-1);
+  --callout: var(--gray-2);
+  --text: var(--gray-9);
+  --grad: var(--pink-1);
+}
+
+html:toggle(mode dark) {
+  --mode: 'dark';
+  --brand: var(--violet-3);
+  --bg: var(--gray-9);
+    --callout: var(--gray-8);
+  --text: var(--gray-2);
+  --grad: var(--pink-9);
+}
+
+.mode-btn {
+  toggle-trigger: mode;
+}
+
+.mode-btn::after {
+  content: ': ' var(--mode, 'auto');
+}
+
+/* Binary switch */
+.todo li {
+  toggle: todo self;
+  cursor: pointer;
+  padding: 0.25em;
+}
+
+.todo li:hover {
+  background-color: var(--callout);
+}
+
+.todo li::marker {
+  content: '❌ ';
+}
+
+.todo li:toggle(todo)::marker {
+  content: '✅ ';
 }
 
 /* Accordion */
 .accordion>dt {
   toggle: glossary;
+  cursor: pointer;
   display: list-item;
+  padding: 0.25em;
 }
 
 .accordion>dt::marker {
-  content: var(--marker, '👉🏽');
+  content: '👉🏽 ';
+}
+
+.accordion>dt:hover {
+  background-color: var(--callout);
+  color: var(--brand);
+}
+
+.accordion>dt:toggle(glossary) {
+  background-color: var(--brand);
+  color: var(--bg);
 }
 
 .accordion>dt:toggle(glossary)::marker {
-  --marker: '👇🏽';
+  content: '👇🏽 ';
 }
 
 .accordion>dd {
@@ -27,12 +79,27 @@
 }
 
 /* Tree view */
-.tree {
+.nested {
   toggle: tree;
 }
 
-.tree+ul {
+.nested+ul {
   toggle-visibility: toggle tree;
+}
+
+.nested {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--brand);
+}
+
+.nested::before {
+  content: '+ ';
+}
+
+.nested:toggle(tree)::before {
+  content: '- ';
 }
 
 /* Tabs */

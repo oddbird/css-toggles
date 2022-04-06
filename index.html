@@ -6,75 +6,148 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS Toggles demo</title>
+  <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <h2>Binary switch</h2>
-  <div>
-    <!-- Need a parent div to avoid greedily attaching all top-level siblings to this toggle root -->
-    <button class="switch">Switch modes</button>
-    <p class="content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quae officiis quam aut veniam
-      perspiciatis reiciendis doloremque, aliquid commodi quod nemo odio delectus id corrupti est earum qui omnis vel
-      quis.</p>
-  </div>
+  <header>
+    <h1>CSS Toggles (in JS)</h1>
+    <nav>
+      <a href="https://css.oddbird.net/toggles/explainer/">Explainer</a>
+      <a href="https://tabatkins.github.io/css-toggle/">Draft Spec</a>
+      <a href="https://github.com/oddbird/css-toggles">Polyfill</a>
+    </nav>
+  </header>
 
-  <h2>Accordion/disclosure components</h2>
-  <dl class='accordion'>
-    <dt>Term 1</dt>
-    <dd>Long description......</dd>
-    <dt>Term 2</dt>
-    <dd>Another long description.....</dd>
-    <dt>Term 3</dt>
-    <dd>Lorem ipsum dolor sit amet...</dd>
-  </dl>
+  <section>
+    <h2>Global color toggle</h2>
+    <button class="mode-btn">cycle colors</button>
+    <pre>html {
+  toggle-root: mode [auto light dark];
+}
 
-  <h2>Tree view</h2>
-  <ul>
-    <li><a href='#'>home</a></li>
-    <li>
-      <button class='tree'>resources</button>
-      <ul>
-        <li><a href='#'>articles</a></li>
-        <li><a href='#'>demos</a></li>
-        <li>
-          <button class='tree'>media</button>
-          <ul>
-            <li><a href='#'>audio</a></li>
-            <li><a href='#'>visual</a></li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-  </ul>
+html:toggle(mode light) { ... }
+html:toggle(mode dark) { ... }
 
-  <h2>Tab and exclusive accordions</h2>
-  <panel-set>
-    <panel-tab>First tab</panel-tab>
-    <panel-card>First panel content</panel-card>
-    <panel-tab>Second tab</panel-tab>
-    <panel-card>Second panel content</panel-card>
-  </panel-set>
+.mode-btn {
+  toggle-trigger: mode;
+}</pre>
+  </section>
 
-  <h2>Named states</h2>
-  <div class="colors">
-    <button>Cycle</button>
-    <button>Purple</button>
-    <button>Green</button>
-    <button>Blue</button>
-    <button>Red</button>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem minus aut praesentium? Tempore nemo dolorem
-      libero neque repellat voluptatem amet ad iusto fugit a, aliquid labore sequi ea in voluptatibus!</p>
-  </div>
+  <section>
+    <h2>Binary self-toggle switches</h2>
+    <ul class='todo'>
+      <li>write an explainer</li>
+      <li>draft a specification</li>
+      <li>create a polyfill</li>
+      <li>make a demo page</li>
+    </ul>
+    <pre>.todo li {
+  toggle: todo self;
+}
 
-  <h2>State machine</h2>
-  <div class="request">
-    <button data-do="try">Try</button>
-    <button data-do="resolve">Resolve</button>
-    <button data-do="reject">Reject</button>
-    <div class="status"></div>
-  </div>
+.todo li::marker {
+  content: '❌ ';
+}
+
+.todo li:toggle(todo)::marker {
+  content: '✅ ';
+}</pre>
+  </section>
+
+  <section>
+    <h2>Accordion/disclosure components</h2>
+    <dl class='accordion'>
+
+      <dt>Establish a toggle</dt>
+      <dd><pre>.accordion>dt {
+  toggle: glossary;
+}</pre></dd>
+
+      <dt>Toggle item visibility</dt>
+      <dd><pre>.accordion>dd {
+  toggle-visibility: toggle glossary;
+}</pre></dd>
+
+      <dt>Style the summary</dt>
+      <dd><pre>.accordion>dt::marker {
+  content: '👉🏽 ';
+}
+
+.accordion>dt:toggle(glossary) {
+  background-color: var(--brand);
+  color: var(--bg);
+}
+
+.accordion>dt:toggle(glossary)::marker {
+  content: '👇🏽 ';
+}
+</pre></dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>Tree view</h2>
+    <ul class="tree">
+      <li><a href='#'>home</a></li>
+      <li>
+        <button class='nested'>resources</button>
+        <ul>
+          <li><a href='#'>articles</a></li>
+          <li><a href='#'>demos</a></li>
+          <li>
+            <button class='nested'>media</button>
+            <ul>
+              <li><a href='#'>audio</a></li>
+              <li><a href='#'>visual</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <pre>.nested {
+  toggle: tree;
+}
+
+.nested+ul {
+  toggle-visibility: toggle tree;
+}</pre>
+  </section>
+
+  <section>
+    <h2>Tab and exclusive accordions</h2>
+    <panel-set>
+      <panel-tab>First tab</panel-tab>
+      <panel-card>First panel content</panel-card>
+      <panel-tab>Second tab</panel-tab>
+      <panel-card>Second panel content</panel-card>
+    </panel-set>
+  </section>
+
+  <section>
+    <h2>Named states</h2>
+    <div class="colors">
+      <button>Cycle</button>
+      <button>Purple</button>
+      <button>Green</button>
+      <button>Blue</button>
+      <button>Red</button>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem minus aut praesentium? Tempore nemo dolorem
+        libero neque repellat voluptatem amet ad iusto fugit a, aliquid labore sequi ea in voluptatibus!</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>State machine</h2>
+    <div class="request">
+      <button data-do="try">Try</button>
+      <button data-do="resolve">Resolve</button>
+      <button data-do="reject">Reject</button>
+      <div class="status"></div>
+    </div>
+  </section>
 
   <script src="index.js" type="module"></script>
 </body>
