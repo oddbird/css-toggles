@@ -220,22 +220,37 @@ panel-card pre {
   toggle-trigger: request do(reject);
 }
 
+.request .status {
+  padding: 1em;
+  margin: 1em 0;
+  background: var(--gray-9);
+  color: var(--gray-1);
+}
+
 .request .status:toggle(request idle) {
-  background-color: grey;
+  background-color: var(--gray-8);
+  --status-note: 'try';
 }
 
 .request .status:toggle(request loading) {
-  background-color: yellow;
+  background-color: var(--yellow-9);
+  --status-note: 'resolve | reject';
 }
 
 .request .status:toggle(request failure) {
-  background-color: red;
+  background-color: var(--red-9);
+  --status-note: 'try (again)';
 }
 
 .request .status:toggle(request success) {
-  background-color: green;
+  background-color: var(--green-9);
+  --status-note: 'none';
+}
+
+.request .status:before {
+  content: attr(data-toggle);
 }
 
 .request .status:after {
-  content: attr(data-toggle);
+  content: ' » ' var(--status-note);
 }

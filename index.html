@@ -172,13 +172,43 @@ panel-card {
   </section>
 
   <section>
-    <h2>State machine</h2>
+    <h2>State machine transitions</h2>
     <div class="request">
       <button data-do="try">Try</button>
       <button data-do="resolve">Resolve</button>
       <button data-do="reject">Reject</button>
       <div class="status"></div>
     </div>
+    <pre>@machine request {
+  idle {
+    try: loading;
+  }
+  loading {
+    resolve: success;
+    reject: failure;
+  }
+  failure {
+    try: loading;
+  }
+  success {}
+}
+
+.request {
+  toggle-root: machine(request);
+}
+
+.request button[data-do="try"] {
+  toggle-trigger: request do(try);
+}
+
+.request button[data-do="resolve"] {
+  toggle-trigger: request do(resolve);
+}
+
+.request button[data-do="reject"] {
+  toggle-trigger: request do(reject);
+}
+</pre>
   </section>
 
   <script src="index.js" type="module"></script>
