@@ -3,7 +3,7 @@
   toggle: switch;
 }
 
-.content:toggle(switch 1) {
+.content:toggle(switch) {
   background-color: black;
   color: white;
 }
@@ -18,7 +18,7 @@
   content: var(--marker, '👉🏽');
 }
 
-.accordion>dt:toggle(glossary 1)::marker {
+.accordion>dt:toggle(glossary)::marker {
   --marker: '👇🏽';
 }
 
@@ -45,7 +45,7 @@ and declares itself a toggle activator */
   display: block;
 }
 
-panel-tab:toggle(tab 1) {
+panel-tab:toggle(tab) {
   font-weight: bold;
 }
 

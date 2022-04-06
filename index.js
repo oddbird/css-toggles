@@ -69,7 +69,7 @@ const toggleTriggerRe = makeRegex([
   /(?<targetState>[\w-]*)/,             // Target state name (optional)
 ])
 const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
-const togglePseudoClassRe = /:toggle\((?<value>.+)\)/
+const togglePseudoClassRe = /:toggle\((?<name>[\w-]+) *(?<value>[\w-]*)\)/
 
 let counter = 0
 const uid = () => counter++
@@ -228,7 +228,15 @@ function togglePseudoClassWalker(node) {
   document.querySelectorAll(baseSelectors).forEach(el => el.dataset.toggle = '')
 
   // Mutate the AST to convert the pseudoclass into `data-toggle` selector
-  node.prelude.value = selector.replace(togglePseudoClassRe, '[data-toggle="$1"]')
+  let replacement
+  const { name, value } = togglePseudoClassRe.exec(selector).groups
+  if (value) {
+    replacement = `[data-toggle="${name} ${value}"]`
+  } else {
+    // Flexible selector that should match any non-zero state
+    replacement = `[data-toggle^="${name} "]:not([data-toggle="${name} 0"])`
+  }
+  node.prelude.value = selector.replace(togglePseudoClassRe, replacement)
 
   // Indicate transpilation is required
   return true
