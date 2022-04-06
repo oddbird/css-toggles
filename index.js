@@ -171,22 +171,23 @@ function renderToggleState(toggleRootId) {
 
   // Find elements that need their visibility toggled
   document.querySelectorAll(`
-     [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
-     [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
-   `).forEach(el => {
-    // Avoid interfering with other nested toggles that don't match
-    // the current one
-    const value = el.dataset.toggleRoot
-    if (value && value !== toggleRootId) return
-
+    [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
+    [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
+  `).forEach(el => {
+    // Avoid interfering with other nested toggles that don't match the current one
+    const closestRoot = el.closest('[data-toggle-root]')
+    if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
     el.dataset.toggleVisibility = toggleRoot.activeIndex > 0 ? 'visible' : 'hidden'
   })
 
   // Write the toggle state on elements selected by [data-toggle]
   document.querySelectorAll(`
-     [data-toggle-root="${toggleRootId}"][data-toggle],
-     [data-toggle-root="${toggleRootId}"] [data-toggle]
-   `).forEach(el => {
+    [data-toggle-root="${toggleRootId}"][data-toggle],
+    [data-toggle-root="${toggleRootId}"] [data-toggle]
+  `).forEach(el => {
+    // Avoid interfering with other nested toggles that don't match the current one
+    const closestRoot = el.closest('[data-toggle-root]')
+    if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
     el.dataset.toggle = `${toggleRoot.name} ${toggleRoot.states[toggleRoot.activeIndex]}`
   })
 }
