@@ -1,4 +1,5 @@
 # CSS Toggles preview
 
-A proof of concept of https://css.oddbird.net/toggles/explainer/
-Demo: https://codepen.io/jerivas/pen/vYpZVmR
+- [Demo](https://css-toggles.netlify.app)
+- [Explainer](https://css.oddbird.net/toggles/explainer/)
+- [Draft Spec](https://tabatkins.github.io/css-toggle/)
