@@ -34,18 +34,15 @@ html:toggle(mode dark) {
   toggle: todo self;
   cursor: pointer;
   padding: 0.25em;
+  list-style-type: '❌ ';
 }
 
 .todo li:hover {
   background-color: var(--callout);
 }
 
-.todo li::marker {
-  content: '❌ ';
-}
-
-.todo li:toggle(todo)::marker {
-  content: '✅ ';
+.todo li:toggle(todo) {
+  list-style-type: '✅ ';
 }
 
 /* Accordion */
@@ -54,10 +51,7 @@ html:toggle(mode dark) {
   cursor: pointer;
   display: list-item;
   padding: 0.25em;
-}
-
-.accordion>dt::marker {
-  content: '👉🏽 ';
+  list-style-type: '👉🏽 ';
 }
 
 .accordion>dt:hover {
@@ -70,8 +64,8 @@ html:toggle(mode dark) {
   color: var(--bg);
 }
 
-.accordion>dt:toggle(glossary)::marker {
-  content: '👇🏽 ';
+.accordion>dt:toggle(glossary) {
+  list-style-type: '👇🏽 ';
 }
 
 .accordion>dd {
