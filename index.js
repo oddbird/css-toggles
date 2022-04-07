@@ -336,24 +336,6 @@ async function handleLinkedStylesheet(el) {
   el.href = URL.createObjectURL(blob)
 }
 
-// Insert styles for visually hidden content
-document.head.insertAdjacentHTML(
-  'beforeend',
-  `<style>
-  [data-toggle-visibility='hidden']:not(:focus):not(:focus-within) {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important; /* Fix for https://github.com/twbs/bootstrap/issues/25686 */
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
-  }
-  </style>`
-)
-
 // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
 document.body.addEventListener('toggle', event => {
   const { target } = event
@@ -405,3 +387,21 @@ await Promise.all([...document.querySelectorAll("link")].map(handleLinkedStylesh
 
 // Finally update the DOM to match all toggle root states
 Object.keys(toggleRoots).forEach(renderToggleState)
+
+// Insert styles for visually hidden content
+document.head.insertAdjacentHTML(
+  'beforeend',
+  `<style>
+    [data-toggle-visibility='hidden']:not(:focus):not(:focus-within) {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important; /* Fix for https://github.com/twbs/bootstrap/issues/25686 */
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+  </style>`
+)
