@@ -17,6 +17,7 @@
  * - Do something with machine(***, strict)
  * - `toggle-group`
  * - support dynamically added elements
+ * - preserve url() definitions when transpiling
  * - decouple from CSS rule order (rely only on markup)
 */
 import * as css from 'https://cdn.jsdelivr.net/npm/css-tree@2.1'
@@ -287,6 +288,7 @@ function toggleWalker(node) {
   createToggleRoots(ruleValue, selectors)
   createToggleTriggers(ruleValue, selectors)
 }
+
 /**
  * Execute all walkers on the text source of a stylesheet.
  * @param {string} sheetSrc
@@ -388,20 +390,8 @@ await Promise.all([...document.querySelectorAll("link")].map(handleLinkedStylesh
 // Finally update the DOM to match all toggle root states
 Object.keys(toggleRoots).forEach(renderToggleState)
 
-// Insert styles for visually hidden content
+// Insert styles for hidden content
 document.head.insertAdjacentHTML(
   'beforeend',
-  `<style>
-    [data-toggle-visibility='hidden']:not(:focus):not(:focus-within) {
-      position: absolute !important;
-      width: 1px !important;
-      height: 1px !important;
-      padding: 0 !important;
-      margin: -1px !important; /* Fix for https://github.com/twbs/bootstrap/issues/25686 */
-      overflow: hidden !important;
-      clip: rect(0, 0, 0, 0) !important;
-      white-space: nowrap !important;
-      border: 0 !important;
-    }
-  </style>`
+  '<style>[data-toggle-visibility="hidden"] { display: none; }</style>'
 )
