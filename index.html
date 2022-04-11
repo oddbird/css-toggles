@@ -23,7 +23,9 @@
   </header>
 
   <section>
-    <h2>What are CSS Toggles?</h2>
+    <h2>
+      What are CSS Toggles?
+    </h2>
     <p>
       The goal of this (work in progress) feature
       is to make it possible for CSS to manage
@@ -57,8 +59,16 @@
     </ul>
   </section>
 
-  <section>
-    <h2>Global color toggle</h2>
+  <section id="named-modes">
+    <h2>
+      <a href="#named-modes" aria-hidden="true">🔗</a>
+      Global color toggle
+    </h2>
+    <p>
+      This syntax for named states
+      is one of several proposed
+      <a href="https://css.oddbird.net/toggles/explainer/#toggle-states">in the explainer</a>.
+    </p>
     <button class="mode-btn">colors</button>
     <pre>html {
   toggle-root: mode [auto light dark];
@@ -72,8 +82,11 @@ html:toggle(mode dark) { ... }
 }</pre>
   </section>
 
-  <section>
-    <h2>Binary self-toggle switches</h2>
+  <section id="binary-switch">
+    <h2>
+      <a href="#binary-switch" aria-hidden="true">🔗</a>
+      Binary self-toggle switches
+    </h2>
     <ul class='todo'>
       <li>write an explainer</li>
       <li>draft a specification</li>
@@ -82,19 +95,26 @@ html:toggle(mode dark) { ... }
     </ul>
     <pre>.todo li {
   toggle: todo self;
+  list-style-type: '❌ ';
 }
 
-.todo li::marker {
-  content: '❌ ';
-}
-
-.todo li:toggle(todo)::marker {
-  content: '✅ ';
+.todo li:toggle(todo) {
+  list-style-type: '✅ ';
 }</pre>
   </section>
 
-  <section>
-    <h2>Accordion/disclosure components</h2>
+  <section id="accordion">
+    <h2>
+      <a href="#accordion" aria-hidden="true">🔗</a>
+      Accordion/disclosure components
+    </h2>
+    <p>
+      The goal of <code>toggle-visibility</code>
+      is for browsers to handle accessibility
+      and discoverability by default.
+      We'll keep working to improve the polyfill a11y as well,
+      but may not be able to achieve the same results.
+    </p>
     <dl class='accordion'>
 
       <dt>Establish a toggle</dt>
@@ -124,8 +144,11 @@ html:toggle(mode dark) { ... }
     </dl>
   </section>
 
-  <section>
-    <h2>Tree view</h2>
+  <section id="tree-view">
+    <h2>
+      <a href="#tree-view" aria-hidden="true">🔗</a>
+      Tree view
+    </h2>
     <ul class="tree">
       <li><a href='#'>home</a></li>
       <li>
@@ -152,8 +175,11 @@ html:toggle(mode dark) { ... }
 }</pre>
   </section>
 
-  <section>
-    <h2>Tabs or exclusive accordions</h2>
+  <section id="panelset">
+    <h2>
+      <a href="#panelset" aria-hidden="true">🔗</a>
+      Tabs or exclusive accordions
+    </h2>
     <p class="issue">
       <a href="https://github.com/oddbird/css-toggles/issues/9">issue 9</a>:
       Not possible to change initial state for one toggle in a group.
@@ -177,8 +203,16 @@ panel-card {
     </panel-set>
   </section>
 
-  <section>
-    <h2>Named states</h2>
+  <section id="named-colors">
+    <h2>
+      <a href="#named-colors" aria-hidden="true">🔗</a>
+      Named states
+    </h2>
+    <p>
+      This syntax for named states
+      is one of several proposed
+      <a href="https://css.oddbird.net/toggles/explainer/#toggle-states">in the explainer</a>.
+    </p>
     <div class="colors">
       <button>Cycle</button>
       <button class="grape">Grape</button>
@@ -205,44 +239,57 @@ panel-card {
     </div>
   </section>
 
-  <section>
-    <h2>State machine transitions</h2>
+  <section id="machine">
+    <h2>
+      <a href="#machine" aria-hidden="true">🔗</a>
+      State machine transitions
+    </h2>
+    <p>
+      This functionality & syntax is proposed
+      <a href="https://css.oddbird.net/toggles/explainer/#triggering-dynamic-transitions">in the explainer</a>
+      as syntax sugar on top of the existing functionality.
+      However, it's not yet clear that there are
+      entirely presentational (CSS-only) use-cases.
+      If you have ideas, we'd love to hear from you.
+      The following example would involve JS in production:
+    </p>
     <div class="request">
       <button data-do="try">Try</button>
       <button data-do="resolve">Resolve</button>
       <button data-do="reject">Reject</button>
+      <button data-do="reset">Reset</button>
       <div class="status"></div>
     </div>
     <pre>@machine request {
   idle {
     try: loading;
   }
+
   loading {
     resolve: success;
     reject: failure;
+    reset: idle;
   }
+
   failure {
     try: loading;
+    reset: idle;
   }
-  success {}
+
+  success {
+    reset: idle;
+  }
 }
 
+/* establish a toggle based on the machine */
 .request {
   toggle-root: machine(request);
 }
 
+/* the individual trigger buttons call 'transitions' */
 .request button[data-do="try"] {
   toggle-trigger: request do(try);
-}
-
-.request button[data-do="resolve"] {
-  toggle-trigger: request do(resolve);
-}
-
-.request button[data-do="reject"] {
-  toggle-trigger: request do(reject);
-}
-</pre>
+}</pre>
   </section>
 
   <footer>

@@ -127,3 +127,32 @@ dd {
   content: '⚠️ ';
   font-style: normal;
 }
+
+/* heading links */
+h2 {
+  position: relative;
+}
+
+h2 [aria-hidden]:any-link {
+  display: inline-block;
+  filter: grayscale(var(--grayscale, 100%));
+  text-decoration: none;
+  transform: scale(var(--scale, 0.75));
+  transition: all 200ms ease-in-out;
+  padding: 0.4em;
+  margin-block-start: -0.4em;
+}
+
+h2 [aria-hidden]:hover,
+h2 [aria-hidden]:focus,
+h2 [aria-hidden]:active {
+  --grayscale: 0;
+  --scale: 1;
+}
+
+@media (min-width: 50em) {
+  h2 [aria-hidden]:any-link {
+    position: absolute;
+    right: 100%;
+  }
+}
