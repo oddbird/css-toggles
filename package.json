@@ -1,0 +1,13 @@
+{
+  "name": "css-toggles",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "scripts": {
+    "dev": "superstatic --host 0.0.0.0 --port 3000"
+  },
+  "devDependencies": {
+    "superstatic": "^7.1.0"
+  }
+}
