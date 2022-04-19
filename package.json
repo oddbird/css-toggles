@@ -5,14 +5,23 @@
   "main": "index.js",
   "module": "index.js",
   "scripts": {
-    "dev": "superstatic --host 0.0.0.0 --port 3000",
     "build:iife:minified": "esbuild --bundle ./index.js --outfile=dist/css-toggles.iife.min.js --format=iife --minify",
     "build:esm:minified": "esbuild --bundle ./index.js --outfile=dist/css-toggles.min.js --format=esm --minify",
     "build:esm:debug": "esbuild --bundle ./index.js --outfile=dist/css-toggles.js --format=esm",
-    "build": "npm run build:esm:debug && npm run build:esm:minified && npm run build:iife:minified"
+    "build": "npm run build:esm:debug && npm run build:esm:minified && npm run build:iife:minified",
+    "dev": "superstatic --host 0.0.0.0 --port 3000",
+    "format:css": "stylelint --fix **/*.css",
+    "format:js": "prettier --write index.js",
+    "format": "npm run format:css && npm run format:js",
+    "lint:css": "stylelint **/*.css",
+    "lint:js": "prettier --check index.js",
+    "lint": "npm run lint:css && npm run lint:js"
   },
   "devDependencies": {
     "esbuild": "^0.14.36",
+    "prettier": "^2.6.2",
+    "stylelint": "^14.7.1",
+    "stylelint-config-standard": "^25.0.0",
     "superstatic": "^7.1.0"
   }
 }

@@ -19,7 +19,7 @@
  * - support dynamically added elements
  * - preserve url() definitions when transpiling
  * - decouple from CSS rule order (rely only on markup)
-*/
+ */
 import * as css from 'https://cdn.jsdelivr.net/npm/css-tree@2.1'
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements#index
@@ -45,29 +45,29 @@ const pseudoElementRe = RegExp(`::?(${pseudoElements})`)
 const makeRegex = (parts, opts) => RegExp(parts.map(p => p.source).join(''), opts)
 
 const toggleRootRe = makeRegex([
-  /(?<name>[\w-]+)/,      // Toggle root name
-  / */,                   // Whitespace
+  /(?<name>[\w-]+)/, // Toggle root name
+  / */, // Whitespace
   /((?<initial>\d+)\/)?/, // Initial state: Integer followed by slash (optional)
-  /(?<numActive>\d*)?/,   // Number of active states (optional)
+  /(?<numActive>\d*)?/, // Number of active states (optional)
   /(\[(?<states>.+)\])?/, // List of named states enclosed in [] (optional)
-  / */,                   // Whitespace
+  / */, // Whitespace
   /(at +(?<at>[\w-]+))?/, // Literal 'at' followed by initial state (optional)
-  / */,                   // Whitespace
-  /(?<modifiers>.*)/,     // Anything else (optional)
+  / */, // Whitespace
+  /(?<modifiers>.*)/, // Anything else (optional)
 ])
 const toggleRootMachineRe = makeRegex([
-  /((?<name>[\w-]+) +)?/,  // Toggle root name (optional)
+  /((?<name>[\w-]+) +)?/, // Toggle root name (optional)
   /(machine\((?<machine>[\w-]+)(?<strict> *, *strict)?\))/, // State machine name
-  / */,                   // Whitespace
+  / */, // Whitespace
   /(at +(?<at>[\w-]+))?/, // Literal 'at' followed by initial state (optional)
-  / */,                   // Whitespace
-  /(?<modifiers>.*)/,     // Anything else (optional)
+  / */, // Whitespace
+  /(?<modifiers>.*)/, // Anything else (optional)
 ])
 const toggleTriggerRe = makeRegex([
-  /(?<name>[\w-]+)/,                    // Target toggle root
-  / */,                                 // Whitespace
+  /(?<name>[\w-]+)/, // Target toggle root
+  / */, // Whitespace
   /(do[ \(](?<transition>[\w-]+)\)?)?/, // Transition name wrapped in `do()` (optional)
-  /(?<targetState>[\w-]*)/,             // Target state name (optional)
+  /(?<targetState>[\w-]*)/, // Target state name (optional)
 ])
 const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 const togglePseudoClassRe = /:toggle\((?<name>[\w-]+) *(?<value>[\w-]*)\)/
@@ -81,7 +81,7 @@ const toggleMachines = {}
 /**
  * Get a list of the `element` and its next siblings
  * @param {HTMLElement} element
-*/
+ */
 function withNextSiblings(element) {
   const siblings = [element]
   let next = element.nextElementSibling
@@ -97,12 +97,11 @@ function withNextSiblings(element) {
  * The object keeps track of the current state
  * @param {string} ruleValue: value of the `toggle-root` or `toggle` rule
  * @param {string} selectors: CSS selector of elements to be used as roots
-*/
+ */
 function createToggleRoots(ruleValue, selectors) {
-  const regex = (ruleValue.includes('machine(')) ? toggleRootMachineRe : toggleRootRe
-  let {
-    name, machine, strict, initial, numActive, states, at, modifiers
-  } = regex.exec(ruleValue).groups
+  const regex = ruleValue.includes('machine(') ? toggleRootMachineRe : toggleRootRe
+  let { name, machine, strict, initial, numActive, states, at, modifiers } =
+    regex.exec(ruleValue).groups
   name = name || machine
   if (name === undefined) return
 
@@ -131,12 +130,22 @@ function createToggleRoots(ruleValue, selectors) {
   if (modifiers.includes('linear')) resetTo = total - 1
   if (modifiers.includes('sticky')) resetTo = 1
 
-  const config = { name, resetTo, group, isNarrow, total, states, machine, activeIndex, strict: Boolean(strict) }
+  const config = {
+    name,
+    resetTo,
+    group,
+    isNarrow,
+    total,
+    states,
+    machine,
+    activeIndex,
+    strict: Boolean(strict),
+  }
 
   document.querySelectorAll(selectors).forEach(el => {
     const id = `${name}-${uid()}`
     const elements = isNarrow ? [el] : withNextSiblings(el)
-    elements.forEach(el => { el.dataset.toggleRoot = id })
+    elements.forEach(el => (el.dataset.toggleRoot = id))
     toggleRoots[id] = { ...config }
   })
 }
@@ -152,10 +161,12 @@ function createToggleTriggers(ruleValue, selectors) {
   if (name === undefined) return
 
   const dispatchToggleEvent = ({ target }) => {
-    target.dispatchEvent(new CustomEvent('toggle', {
-      bubbles: true,
-      detail: { toggleRoot: name, targetState, transition }
-    }))
+    target.dispatchEvent(
+      new CustomEvent('toggle', {
+        bubbles: true,
+        detail: { toggleRoot: name, targetState, transition },
+      })
+    )
   }
 
   document.querySelectorAll(selectors).forEach(el => {
@@ -166,31 +177,41 @@ function createToggleTriggers(ruleValue, selectors) {
 /**
  * Render toggle state information to the DOM
  * @param {string} toggleRootId: identifier of the toggle root to update
-*/
+ */
 function renderToggleState(toggleRootId) {
   const toggleRoot = toggleRoots[toggleRootId]
 
   // Find elements that need their visibility toggled
-  document.querySelectorAll(`
+  document
+    .querySelectorAll(
+      `
     [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
     [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
-  `).forEach(el => {
-    // Avoid interfering with other nested toggles that don't match the current one
-    const closestRoot = el.closest('[data-toggle-root]')
-    if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
-    el.dataset.toggleVisibility = toggleRoot.activeIndex > 0 ? 'visible' : 'hidden'
-  })
+  `
+    )
+    .forEach(el => {
+      // Avoid interfering with other nested toggles that don't match the current one
+      const closestRoot = el.closest('[data-toggle-root]')
+      if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
+      el.dataset.toggleVisibility = toggleRoot.activeIndex > 0 ? 'visible' : 'hidden'
+    })
 
   // Write the toggle state on elements selected by [data-toggle]
-  document.querySelectorAll(`
+  document
+    .querySelectorAll(
+      `
     [data-toggle-root="${toggleRootId}"][data-toggle],
     [data-toggle-root="${toggleRootId}"] [data-toggle]
-  `).forEach(el => {
-    // Avoid interfering with other nested toggles that don't match the current one
-    const closestRoot = el.closest('[data-toggle-root]')
-    if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
-    el.dataset.toggle = `${toggleRoot.name} ${toggleRoot.states[toggleRoot.activeIndex]}`
-  })
+  `
+    )
+    .forEach(el => {
+      // Avoid interfering with other nested toggles that don't match the current one
+      const closestRoot = el.closest('[data-toggle-root]')
+      if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
+      el.dataset.toggle = `${toggleRoot.name} ${
+        toggleRoot.states[toggleRoot.activeIndex]
+      }`
+    })
 }
 
 /**
@@ -220,14 +241,14 @@ function togglePseudoClassWalker(node) {
 
   // Set up `data-toggle` attribute to polyfill behavior
   let baseSelectors = new Set(
-    selector.split(',').map(sel => (
-      sel.trim()
-        .replace(togglePseudoClassRe, '')
-        .replace(pseudoElementRe, '')
-    ))
+    selector
+      .split(',')
+      .map(sel =>
+        sel.trim().replace(togglePseudoClassRe, '').replace(pseudoElementRe, '')
+      )
   )
   baseSelectors = [...baseSelectors].join(',')
-  document.querySelectorAll(baseSelectors).forEach(el => el.dataset.toggle = '')
+  document.querySelectorAll(baseSelectors).forEach(el => (el.dataset.toggle = ''))
 
   // Mutate the AST to convert the pseudoclass into `data-toggle` selector
   let replacement
@@ -298,7 +319,9 @@ function toggleWalker(node) {
 function initStylesheet(sheetSrc, url) {
   let transpilationRequired = false
   const ast = css.parse(sheetSrc, {
-    parseAtrulePrelude: false, parseRulePrelude: false, parseValue: false
+    parseAtrulePrelude: false,
+    parseRulePrelude: false,
+    parseValue: false,
   })
   css.walk(ast, function (node) {
     toggleMachineWalker.bind(this)(node)
@@ -326,7 +349,7 @@ function handleStyleTag(el) {
  * @param {HTMLElement} el
  */
 async function handleLinkedStylesheet(el) {
-  if (el.rel !== "stylesheet") return
+  if (el.rel !== 'stylesheet') return
   const srcUrl = new URL(el.href, document.baseURI)
   if (srcUrl.origin !== location.origin) return
   const src = await fetch(srcUrl.toString()).then(r => r.text())
@@ -334,7 +357,7 @@ async function handleLinkedStylesheet(el) {
   const newSrc = initStylesheet(src, srcUrl.toString())
   if (!newSrc) return
 
-  const blob = new Blob([newSrc], { type: "text/css" })
+  const blob = new Blob([newSrc], { type: 'text/css' })
   el.href = URL.createObjectURL(blob)
 }
 
@@ -384,15 +407,15 @@ document.body.addEventListener('toggle', event => {
 })
 
 // Kick off the polyfill by parsing all inline stylesheets
-document.querySelectorAll("style").forEach(handleStyleTag)
+document.querySelectorAll('style').forEach(handleStyleTag)
 
 // Also parse all linked stylesheets
-Promise.all(
-  [...document.querySelectorAll("link")].map(handleLinkedStylesheet)
-).then(() =>{
-  // Finally update the DOM to match all toggle root states
-  Object.keys(toggleRoots).forEach(renderToggleState)
-})
+Promise.all([...document.querySelectorAll('link')].map(handleLinkedStylesheet)).then(
+  () => {
+    // Finally update the DOM to match all toggle root states
+    Object.keys(toggleRoots).forEach(renderToggleState)
+  }
+)
 
 // Insert styles for hidden content
 document.head.insertAdjacentHTML(

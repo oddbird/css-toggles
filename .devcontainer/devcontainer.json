@@ -10,6 +10,7 @@
     "esbenp.prettier-vscode",
     "formulahendry.auto-rename-tag",
     "ms-azuretools.vscode-docker",
+    "stylelint.vscode-stylelint",
     "tyriar.sort-lines",
     "xabikos.javascriptsnippets"
   ],
@@ -22,7 +23,8 @@
     "terminal.integrated.defaultProfile.linux": "bash",
     "editor.bracketPairColorization.enabled": true,
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true
+      "source.fixAll.eslint": true,
+      "source.fixAll.stylelint": true
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -37,6 +39,10 @@
       "ms-azuretools.vscode-docker": "workspace"
     },
     "typescript.tsdk": "node_modules/typescript/lib",
+    "css.validate": false,
+    "[css]": {
+      "editor.defaultFormatter": "stylelint.vscode-stylelint"
+    },
     "[javascript]": {
       "editor.rulers": [80]
     },

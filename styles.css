@@ -46,7 +46,7 @@ html:toggle(mode dark) {
 }
 
 /* Accordion */
-.accordion>dt {
+.accordion > dt {
   toggle: glossary;
   cursor: pointer;
   display: list-item;
@@ -54,38 +54,32 @@ html:toggle(mode dark) {
   list-style-type: '👉🏽 ';
 }
 
-.accordion>dt:hover {
+.accordion > dt:hover {
   background-color: var(--callout);
   color: var(--brand);
 }
 
-.accordion>dt:toggle(glossary) {
+.accordion > dt:toggle(glossary) {
   background-color: var(--brand);
   color: var(--bg);
-}
-
-.accordion>dt:toggle(glossary) {
   list-style-type: '👇🏽 ';
 }
 
-.accordion>dd {
+.accordion > dd {
   toggle-visibility: toggle glossary;
 }
 
 /* Tree view */
 .nested {
   toggle: tree;
-}
-
-.nested+ul {
-  toggle-visibility: toggle tree;
-}
-
-.nested {
   background: none;
   border: none;
   padding: 0;
   color: var(--brand);
+}
+
+.nested + ul {
+  toggle-visibility: toggle tree;
 }
 
 .nested::before {
@@ -114,6 +108,7 @@ panel-tab {
 }
 
 /* first tab toggled by default */
+
 /* panel-tab:first-child {
   toggle: tab 1 at 1 group sticky;
 } */
@@ -182,6 +177,7 @@ panel-card pre {
 
 /* State machines */
 @machine request {
+  /* stylelint-disable property-no-unknown */
   idle {
     try: loading;
   }
@@ -200,25 +196,26 @@ panel-card pre {
   success {
     reset: idle;
   }
+  /* stylelint-enable property-no-unknown */
 }
 
 .request {
   toggle-root: machine(request);
 }
 
-.request button[data-do="try"] {
+.request button[data-do='try'] {
   toggle-trigger: request do(try);
 }
 
-.request button[data-do="resolve"] {
+.request button[data-do='resolve'] {
   toggle-trigger: request do(resolve);
 }
 
-.request button[data-do="reject"] {
+.request button[data-do='reject'] {
   toggle-trigger: request do(reject);
 }
 
-.request button[data-do="reset"] {
+.request button[data-do='reset'] {
   toggle-trigger: request do(reset);
 }
 
@@ -231,28 +228,32 @@ panel-card pre {
 
 .request .status:toggle(request idle) {
   background-color: var(--gray-8);
+
   --status-note: 'try';
 }
 
 .request .status:toggle(request loading) {
   background-color: var(--yellow-9);
+
   --status-note: 'resolve | reject';
 }
 
 .request .status:toggle(request failure) {
   background-color: var(--red-9);
+
   --status-note: 'try (again)';
 }
 
 .request .status:toggle(request success) {
   background-color: var(--green-9);
+
   --status-note: 'none';
 }
 
-.request .status:before {
+.request .status::before {
   content: attr(data-toggle);
 }
 
-.request .status:after {
+.request .status::after {
   content: ' » ' var(--status-note);
 }

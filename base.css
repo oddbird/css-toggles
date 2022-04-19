@@ -35,11 +35,13 @@ body {
 }
 
 /* layout */
-header, section {
+header,
+section {
   padding: 1em;
 }
 
-header, footer {
+header,
+footer {
   grid-column: full;
 }
 
@@ -59,10 +61,6 @@ nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5em;
-}
-
-nav a:any-link {
-  padding: 0.25em;
 }
 
 section {
@@ -113,6 +111,10 @@ pre {
 
 dd {
   margin: 1em;
+}
+
+nav a:any-link {
+  padding: 0.25em;
 }
 
 .issue {
