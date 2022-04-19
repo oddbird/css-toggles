@@ -383,12 +383,16 @@ document.body.addEventListener('toggle', event => {
   renderToggleState(id)
 })
 
-// Kick off the polyfill by parsing all inline and linked stylesheets
+// Kick off the polyfill by parsing all inline stylesheets
 document.querySelectorAll("style").forEach(handleStyleTag)
-await Promise.all([...document.querySelectorAll("link")].map(handleLinkedStylesheet))
 
-// Finally update the DOM to match all toggle root states
-Object.keys(toggleRoots).forEach(renderToggleState)
+// Also parse all linked stylesheets
+Promise.all(
+  [...document.querySelectorAll("link")].map(handleLinkedStylesheet)
+).then(() =>{
+  // Finally update the DOM to match all toggle root states
+  Object.keys(toggleRoots).forEach(renderToggleState)
+})
 
 // Insert styles for hidden content
 document.head.insertAdjacentHTML(
