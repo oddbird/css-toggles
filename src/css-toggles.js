@@ -20,7 +20,9 @@
  * - preserve url() definitions when transpiling
  * - decouple from CSS rule order (rely only on markup)
  */
-import * as css from 'https://cdn.jsdelivr.net/npm/css-tree@2.1'
+import parse from 'css-tree/parser'
+import walk from 'css-tree/walker'
+import generate from 'css-tree/generator'
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements#index
 const pseudoElements = [
@@ -318,12 +320,12 @@ function toggleWalker(node) {
  */
 function initStylesheet(sheetSrc, url) {
   let transpilationRequired = false
-  const ast = css.parse(sheetSrc, {
+  const ast = parse(sheetSrc, {
     parseAtrulePrelude: false,
     parseRulePrelude: false,
     parseValue: false,
   })
-  css.walk(ast, function (node) {
+  walk(ast, function (node) {
     toggleMachineWalker.bind(this)(node)
     transpilationRequired |= togglePseudoClassWalker.bind(this)(node)
     toggleVisibilityWalker.bind(this)(node)
@@ -331,7 +333,7 @@ function initStylesheet(sheetSrc, url) {
     toggleTriggerWalker.bind(this)(node)
     toggleWalker.bind(this)(node)
   })
-  return transpilationRequired ? css.generate(ast) : ''
+  return transpilationRequired ? generate(ast) : ''
 }
 
 /**
