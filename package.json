@@ -24,6 +24,6 @@
     "stylelint-config-standard": "^25.0.0"
   },
   "dependencies": {
-    "css-tree": "^2.1.0"
+    "stylis": "^4.1.0"
   }
 }

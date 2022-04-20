@@ -20,9 +20,7 @@
  * - preserve url() definitions when transpiling
  * - decouple from CSS rule order (rely only on markup)
  */
-import parse from 'css-tree/parser'
-import walk from 'css-tree/walker'
-import generate from 'css-tree/generator'
+import * as stylis from 'stylis'
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements#index
 const pseudoElements = [
@@ -218,96 +216,100 @@ function renderToggleState(toggleRootId) {
 
 /**
  * Parse `@machine` at-rules and convert them to machine objects
- * @param {css-tree node} node
+ * @param {stylis Element} element
  */
-function toggleMachineWalker(node) {
-  if (!(node.type === 'Atrule' && node.name === 'machine')) return
-  const name = node.prelude.value
+function toggleMachineWalker(element) {
+  const name = (element.props || [])[0]
+  if (!(element.type === '@machine' && name)) return
+
   const states = {}
-  node.block.children.forEach(rule => {
-    states[rule.prelude.value] = Object.fromEntries(
-      rule.block.children.map(decl => [decl.property, decl.value.value])
-    )
-  })
+  element.children
+    .filter(child => child.type === 'rule')
+    .forEach(rule => {
+      states[rule.value] = Object.fromEntries(
+        rule.children
+          .filter(child => child.type === 'decl')
+          .map(decl => [decl.props, decl.children])
+      )
+    })
   toggleMachines[name] = { name, states }
 }
 
 /**
  * Parse and mutate rules that use a `:toggle()` pseudoclass.
- * @param {css-tree node} node
+ * @param {stylis Element} element
  * @returns {bool} indicates if the AST was mutated and transpilation is required
  */
-function togglePseudoClassWalker(node) {
-  const selector = node?.prelude?.value || ''
-  if (!(node.type === 'Rule' && selector.match(togglePseudoClassRe))) return
+function togglePseudoClassWalker(element) {
+  if (element.type !== 'rule') return
 
-  // Set up `data-toggle` attribute to polyfill behavior
-  let baseSelectors = new Set(
-    selector
-      .split(',')
-      .map(sel =>
-        sel.trim().replace(togglePseudoClassRe, '').replace(pseudoElementRe, '')
-      )
-  )
-  baseSelectors = [...baseSelectors].join(',')
-  document.querySelectorAll(baseSelectors).forEach(el => (el.dataset.toggle = ''))
+  let didReplace = false
+  element.props = element.props.map(selector => {
+    if (!selector.match(togglePseudoClassRe)) return selector
 
-  // Mutate the AST to convert the pseudoclass into `data-toggle` selector
-  let replacement
-  const { name, value } = togglePseudoClassRe.exec(selector).groups
-  if (value) {
-    replacement = `[data-toggle="${name} ${value}"]`
-  } else {
-    // Flexible selector that should match any non-zero state
-    replacement = `[data-toggle^="${name} "]:not([data-toggle="${name} 0"])`
-  }
-  node.prelude.value = selector.replace(togglePseudoClassRe, replacement)
+    // Set up `data-toggle` attribute to polyfill behavior
+    let baseSelector = selector
+      .replace(togglePseudoClassRe, '')
+      .replace(pseudoElementRe, '')
+    document.querySelectorAll(baseSelector).forEach(el => (el.dataset.toggle = ''))
 
-  // Indicate transpilation is required
-  return true
+    // Mutate the AST to convert the pseudoclass into `data-toggle` selector
+    let replacement
+    const { name, value } = togglePseudoClassRe.exec(selector).groups
+    if (value) {
+      replacement = `[data-toggle="${name} ${value}"]`
+    } else {
+      // Flexible selector that should match any non-zero state
+      replacement = `[data-toggle^="${name} "]:not([data-toggle="${name} 0"])`
+    }
+    didReplace = true
+    return selector.replace(togglePseudoClassRe, replacement)
+  })
+
+  return didReplace
 }
 
 /**
  * Parse declarations that use the `toggle-visibility` property and set the
  * `data-toggle-visibility` attribute
- * @param {css-tree node} node
+ * @param {stylis Element} element
  */
-function toggleVisibilityWalker(node) {
-  if (!(node.type === 'Declaration' && node.property === 'toggle-visibility')) return
-  const { name } = toggleVisibilityRe.exec(node.value.value).groups
+function toggleVisibilityWalker(element) {
+  if (!(element.type === 'decl' && element.props === 'toggle-visibility')) return
+  const { name } = toggleVisibilityRe.exec(element.children).groups
   if (name === undefined) return
 
-  document.querySelectorAll(this.rule.prelude.value).forEach(el => {
+  document.querySelectorAll(element.parent.value).forEach(el => {
     el.dataset.toggleVisibility = ''
   })
 }
 
 /**
  * Parse declarations that use the `toggle-root` property and create toggle root records.
- * @param {css-tree node} node
+ * @param {stylis Element} element
  */
-function toggleRootWalker(node) {
-  if (!(node.type === 'Declaration' && node.property === 'toggle-root')) return
-  createToggleRoots(node.value.value, this.rule.prelude.value)
+function toggleRootWalker(element) {
+  if (!(element.type === 'decl' && element.props === 'toggle-root')) return
+  createToggleRoots(element.children, element.parent.value)
 }
 
 /**
  * Parse declarations that use the `toggle-trigger` property and initialize trigger logic.
- * @param {css-tree node} node
+ * @param {stylis Element} element
  */
-function toggleTriggerWalker(node) {
-  if (!(node.type === 'Declaration' && node.property === 'toggle-trigger')) return
-  createToggleTriggers(node.value.value, this.rule.prelude.value)
+function toggleTriggerWalker(element) {
+  if (!(element.type === 'decl' && element.props === 'toggle-trigger')) return
+  createToggleTriggers(element.children, element.parent.value)
 }
 
 /**
  * Parse declarations that use the `toggle` shorthand property and initialize roots and triggers.
- * @param {css-tree node} node
+ * @param {stylis Element} element
  */
-function toggleWalker(node) {
-  if (!(node.type === 'Declaration' && node.property === 'toggle')) return
-  const selectors = this.rule.prelude.value
-  const ruleValue = node.value.value
+function toggleWalker(element) {
+  if (!(element.type === 'decl' && element.props === 'toggle')) return
+  const selectors = element.parent.value
+  const ruleValue = element.children
   createToggleRoots(ruleValue, selectors)
   createToggleTriggers(ruleValue, selectors)
 }
@@ -319,21 +321,22 @@ function toggleWalker(node) {
  * @returns {string} transpiled source, or empty string if no transpilation is required
  */
 function initStylesheet(sheetSrc, url) {
-  let transpilationRequired = false
-  const ast = parse(sheetSrc, {
-    parseAtrulePrelude: false,
-    parseRulePrelude: false,
-    parseValue: false,
-  })
-  walk(ast, function (node) {
-    toggleMachineWalker.bind(this)(node)
-    transpilationRequired |= togglePseudoClassWalker.bind(this)(node)
-    toggleVisibilityWalker.bind(this)(node)
-    toggleRootWalker.bind(this)(node)
-    toggleTriggerWalker.bind(this)(node)
-    toggleWalker.bind(this)(node)
-  })
-  return transpilationRequired ? generate(ast) : ''
+  let didReplace = false
+  function walk(element) {
+    toggleMachineWalker(element)
+    didReplace |= togglePseudoClassWalker(element)
+    toggleVisibilityWalker(element)
+    toggleRootWalker(element)
+    toggleTriggerWalker(element)
+    toggleWalker(element)
+
+    const size = (element.children || []).length
+    for (let i = 0; i < size; i++) walk(element.children[i])
+  }
+
+  const cssAst = stylis.compile(sheetSrc)
+  cssAst.forEach(walk)
+  return didReplace ? stylis.serialize(cssAst, stylis.stringify) : ''
 }
 
 /**
