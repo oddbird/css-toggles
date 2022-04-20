@@ -323,6 +323,8 @@ function toggleWalker(element) {
 function initStylesheet(sheetSrc, url) {
   let didReplace = false
   function walk(element) {
+    if (element.type === 'comm') return
+
     toggleMachineWalker(element)
     didReplace |= togglePseudoClassWalker(element)
     toggleVisibilityWalker(element)
