@@ -1,6 +1,6 @@
 {
   "name": "@oddbird/css-toggles",
-  "version": "1.0.1",
+  "version": "0.0.0-development",
   "description": "Polyfill for the proposed CSS Toggles syntax",
   "publishConfig": {
     "access": "public"
@@ -20,18 +20,27 @@
   "type": "module",
   "main": "dist/css-toggles.js",
   "module": "dist/css-toggles.js",
+  "files": [
+    "README.md",
+    "src/css-toggles.js",
+    "dist/css-toggles.iife.min.js",
+    "dist/css-toggles.min.js",
+    "dist/css-toggles.js",
+    "package.json"
+  ],
   "scripts": {
     "build:iife:minified": "esbuild --bundle src/css-toggles.js --outfile=dist/css-toggles.iife.min.js --format=iife --minify",
     "build:esm:minified": "esbuild --bundle src/css-toggles.js --outfile=dist/css-toggles.min.js --format=esm --minify",
     "build:esm:debug": "esbuild --bundle src/css-toggles.js --outfile=dist/css-toggles.js --format=esm",
-    "build": "rm -rf dist && npm run build:esm:debug && npm run build:esm:minified && npm run build:iife:minified",
+    "build": "rm -rf dist && yarn build:esm:debug && yarn build:esm:minified && yarn build:iife:minified",
     "dev": "rm -rf dist && esbuild --bundle src/css-toggles.js --format=esm --servedir=. --outdir=dist --serve=3000 --sourcemap=inline",
     "format:css": "stylelint --fix src/**/*.css",
     "format:js": "prettier --write src/**/*.js",
-    "format": "npm run format:css && npm run format:js",
+    "format": "yarn format:css && yarn format:js",
     "lint:css": "stylelint src/**/*.css",
     "lint:js": "prettier --check src/**/*.js",
-    "lint": "npm run lint:css && npm run lint:js"
+    "lint": "yarn lint:css && yarn lint:js",
+    "prepack": "yarn build"
   },
   "devDependencies": {
     "esbuild": "^0.14.36",
