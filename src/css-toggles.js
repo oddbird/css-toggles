@@ -185,9 +185,9 @@ function renderToggleState(toggleRootId) {
   document
     .querySelectorAll(
       `
-    [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
-    [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
-  `
+      [data-toggle-root="${toggleRootId}"][data-toggle-visibility],
+      [data-toggle-root="${toggleRootId}"] [data-toggle-visibility]
+      `
     )
     .forEach(el => {
       // Avoid interfering with other nested toggles that don't match the current one
@@ -200,9 +200,9 @@ function renderToggleState(toggleRootId) {
   document
     .querySelectorAll(
       `
-    [data-toggle-root="${toggleRootId}"][data-toggle],
-    [data-toggle-root="${toggleRootId}"] [data-toggle]
-  `
+      [data-toggle-root="${toggleRootId}"][data-toggle],
+      [data-toggle-root="${toggleRootId}"] [data-toggle]
+      `
     )
     .forEach(el => {
       // Avoid interfering with other nested toggles that don't match the current one
@@ -247,9 +247,9 @@ function togglePseudoClassWalker(element) {
   element.props = element.props.map(selector => {
     if (!selector.match(togglePseudoClassRe)) return selector
 
-    // Set up `data-toggle` attribute to polyfill behavior
-    let baseSelector = selector
-      .replace(togglePseudoClassRe, '')
+    // Set up `data-toggle` attribute on the selected nodes to polyfill behavior
+    const baseSelector = selector
+      .slice(0, selector.search(togglePseudoClassRe))
       .replace(pseudoElementRe, '')
     document.querySelectorAll(baseSelector).forEach(el => (el.dataset.toggle = ''))
 
