@@ -1,9 +1,25 @@
 {
-  "name": "css-toggles",
-  "version": "0.0.1",
+  "name": "@oddbird/css-toggles",
+  "version": "1.0.1",
+  "description": "Polyfill for the proposed CSS Toggles syntax",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "OddBird <birds@oddbird.net> (oddbird.net)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oddbird/css-toggles.git"
+  },
+  "bugs": "https://github.com/oddbird/css-toggles/issues",
+  "homepage": "https://toggles.oddbird.net",
+  "keywords": [
+    "css",
+    "polyfill",
+    "toggle"
+  ],
   "type": "module",
-  "main": "src/css-toggles.js",
-  "module": "src/css-toggles.js",
+  "main": "dist/css-toggles.js",
+  "module": "dist/css-toggles.js",
   "scripts": {
     "build:iife:minified": "esbuild --bundle src/css-toggles.js --outfile=dist/css-toggles.iife.min.js --format=iife --minify",
     "build:esm:minified": "esbuild --bundle src/css-toggles.js --outfile=dist/css-toggles.min.js --format=esm --minify",
