@@ -2,6 +2,7 @@
   "name": "@oddbird/css-toggles",
   "version": "0.0.0-development",
   "description": "Polyfill for the proposed CSS Toggles syntax",
+  "license": "BSD-3-Clause",
   "publishConfig": {
     "access": "public"
   },
