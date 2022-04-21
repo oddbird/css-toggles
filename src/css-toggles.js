@@ -169,8 +169,22 @@ function createToggleTriggers(ruleValue, selectors) {
     )
   }
 
+  function handleKeyDown(event) {
+    if (![' ', 'Enter', 'Spacebar'].includes(event.key)) return
+    event.preventDefault()
+    dispatchToggleEvent(event)
+  }
+
   document.querySelectorAll(selectors).forEach(el => {
+    el.dataset.toggleTrigger = ''
     el.addEventListener('click', dispatchToggleEvent)
+    if (['button', 'a', 'input'].includes(el.nodeName.toLowerCase())) return
+
+    // Emulate button behavior on non-button trigger
+    el.addEventListener('keydown', handleKeyDown)
+    el.setAttribute('tabindex', 0)
+    el.setAttribute('role', 'button')
+    el.setAttribute('aria-pressed', false)
   })
 }
 
@@ -180,6 +194,7 @@ function createToggleTriggers(ruleValue, selectors) {
  */
 function renderToggleState(toggleRootId) {
   const toggleRoot = toggleRoots[toggleRootId]
+  const { activeIndex } = toggleRoot
 
   // Find elements that need their visibility toggled
   document
@@ -193,7 +208,7 @@ function renderToggleState(toggleRootId) {
       // Avoid interfering with other nested toggles that don't match the current one
       const closestRoot = el.closest('[data-toggle-root]')
       if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
-      el.dataset.toggleVisibility = toggleRoot.activeIndex > 0 ? 'visible' : 'hidden'
+      el.dataset.toggleVisibility = activeIndex > 0 ? 'visible' : 'hidden'
     })
 
   // Write the toggle state on elements selected by [data-toggle]
@@ -208,9 +223,22 @@ function renderToggleState(toggleRootId) {
       // Avoid interfering with other nested toggles that don't match the current one
       const closestRoot = el.closest('[data-toggle-root]')
       if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
-      el.dataset.toggle = `${toggleRoot.name} ${
-        toggleRoot.states[toggleRoot.activeIndex]
-      }`
+      el.dataset.toggle = `${toggleRoot.name} ${toggleRoot.states[activeIndex]}`
+    })
+
+  // Update pressed state of polyfilled triggers
+  document
+    .querySelectorAll(
+      `
+      [data-toggle-root="${toggleRootId}"][data-toggle-trigger][aria-pressed],
+      [data-toggle-root="${toggleRootId}"] [data-toggle-trigger][aria-pressed]
+      `
+    )
+    .forEach(el => {
+      // Avoid interfering with other nested toggles that don't match the current one
+      const closestRoot = el.closest('[data-toggle-root]')
+      if (closestRoot?.dataset.toggleRoot !== toggleRootId) return
+      el.setAttribute('aria-pressed', activeIndex > 0)
     })
 }
 
