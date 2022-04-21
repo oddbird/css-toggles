@@ -54,10 +54,7 @@ jobs:
         with:
           node-version: '${{ needs.prepare.outputs.node }}'
           cache: yarn
-      - name: Build
-        run: |
-          yarn install
-          yarn build
+      - run: yarn install
       - name: Release
         uses: cycjimmy/semantic-release-action@v3
         with:
