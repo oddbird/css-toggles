@@ -40,7 +40,8 @@
     "lint:css": "stylelint src/**/*.css",
     "lint:js": "prettier --check src/**/*.js",
     "lint": "yarn lint:css && yarn lint:js",
-    "prepack": "yarn build"
+    "prepack": "yarn build",
+    "test": "echo 'TODO: ADD TESTS'"
   },
   "devDependencies": {
     "esbuild": "^0.14.36",

@@ -1,0 +1,72 @@
+name: Test & Release
+
+on:
+  push:
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    outputs:
+      node: ${{ steps.get-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: get-version
+        run: echo "::set-output name=version::$(grep -oP 'FROM node:\K\d+' Dockerfile)"
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '${{ needs.prepare.outputs.node }}'
+          cache: yarn
+      - name: Test
+        run: |
+          yarn install
+          yarn test
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '${{ needs.prepare.outputs.node }}'
+          cache: yarn
+      - name: Lint
+        run: |
+          yarn install
+          yarn lint
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [prepare, test, lint]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '${{ needs.prepare.outputs.node }}'
+          cache: yarn
+      - name: Build
+        run: |
+          yarn install
+          yarn build
+      - name: Release
+        uses: cycjimmy/semantic-release-action@v3
+        with:
+          semantic_version: '19'
+          branches: |
+            [
+              'stable',
+              { name: 'main', channel: 'next', prerelease: true },
+            ]
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
