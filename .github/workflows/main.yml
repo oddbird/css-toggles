@@ -28,11 +28,11 @@ jobs:
         with:
           node-version: '${{ needs.prepare.outputs.node }}'
           cache: yarn
-      - name: Test
+      - name: Install dependencies
         run: |
           yarn install
-          npx playwright install
-          yarn test --browser=all
+          npx playwright install --with-deps
+      - run: yarn test --browser=all
 
   lint:
     name: Lint
