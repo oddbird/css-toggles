@@ -25,25 +25,17 @@ test('toggle on click', async ({ firstItem }) => {
   await expect(firstItem).toHaveAttribute('aria-pressed', 'false')
 })
 
-test('toggle on Space', async ({ firstItem }) => {
-  await firstItem.press(' ')
-  await expect(firstItem).toHaveAttribute('data-toggle', 'todo 1')
-  await expect(firstItem).toHaveAttribute('aria-pressed', 'true')
+for (const key of ['Space', 'Enter']) {
+  test(`toggle on ${key} key press`, async ({ firstItem }) => {
+    await firstItem.press(key)
+    await expect(firstItem).toHaveAttribute('data-toggle', 'todo 1')
+    await expect(firstItem).toHaveAttribute('aria-pressed', 'true')
 
-  await firstItem.press(' ')
-  await expect(firstItem).toHaveAttribute('data-toggle', 'todo 0')
-  await expect(firstItem).toHaveAttribute('aria-pressed', 'false')
-})
-
-test('toggle on Enter', async ({ firstItem }) => {
-  await firstItem.press('Enter')
-  await expect(firstItem).toHaveAttribute('data-toggle', 'todo 1')
-  await expect(firstItem).toHaveAttribute('aria-pressed', 'true')
-
-  await firstItem.press('Enter')
-  await expect(firstItem).toHaveAttribute('data-toggle', 'todo 0')
-  await expect(firstItem).toHaveAttribute('aria-pressed', 'false')
-})
+    await firstItem.press(key)
+    await expect(firstItem).toHaveAttribute('data-toggle', 'todo 0')
+    await expect(firstItem).toHaveAttribute('aria-pressed', 'false')
+  })
+}
 
 for (const key of ['F1', 'KeyA', 'Control', 'Digit1']) {
   test(`ignore ${key} key press`, async ({ firstItem }) => {
