@@ -3,6 +3,10 @@ name: Test & Release
 on:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   prepare:
     name: Prepare
@@ -27,7 +31,8 @@ jobs:
       - name: Test
         run: |
           yarn install
-          yarn test
+          npx playwright install
+          yarn test --browser=all
 
   lint:
     name: Lint
