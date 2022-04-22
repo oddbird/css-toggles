@@ -36,10 +36,10 @@
     "build": "rm -rf dist && yarn build:esm:debug && yarn build:esm:minified && yarn build:iife:minified",
     "dev": "rm -rf dist && esbuild --bundle src/css-toggles.js --format=esm --servedir=. --outdir=dist --sourcemap --serve=\"${PORT:-3000}\" --log-level=\"${LEVEL:-info}\"",
     "format:css": "stylelint --fix src/**/*.css",
-    "format:js": "prettier --write src/**/*.js",
+    "format:js": "prettier --write {src,tests}/**/*.js",
     "format": "yarn format:css && yarn format:js",
     "lint:css": "stylelint src/**/*.css",
-    "lint:js": "prettier --check src/**/*.js",
+    "lint:js": "prettier --check {src,tests}/**/*.js",
     "lint": "yarn lint:css && yarn lint:js",
     "prepack": "yarn build",
     "test": "playwright test"
