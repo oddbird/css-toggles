@@ -24,15 +24,11 @@ jobs:
     needs: [prepare]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '${{ needs.prepare.outputs.node }}'
-          cache: yarn
-      - name: Install dependencies
-        run: |
-          yarn install
-          npx playwright install --with-deps
-      - run: yarn test --browser=all
+      - run: docker-compose pull test
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+      - run: docker-compose up test
 
   lint:
     name: Lint

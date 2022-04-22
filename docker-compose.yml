@@ -25,4 +25,4 @@ services:
       - .:/app:cached
       - /app/node_modules
     ipc: host
-    command: yarn test
+    command: yarn test --browser=all
