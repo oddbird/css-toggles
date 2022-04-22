@@ -61,10 +61,6 @@ in the HTML document (both inline and linked) for the proposed CSS Toggles
 syntax. Once the styles are parsed the toggling behavior will be polyfilled with
 JavaScript.
 
-## Development
+## Contributing
 
-- Clone the repository.
-- Install dependencies: `yarn install`.
-- Start dev server: `yarn dev`. Visit `localhost:3000`.
-
-To automatically format source code run `yarn format`.
+Visit our [contribution guidelines](https://github.com/oddbird/css-toggles/blob/main/CONTRIBUTING.md).
