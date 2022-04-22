@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: get-version
-        run: echo "::set-output name=version::$(grep -oP 'FROM node:\K\d+' Dockerfile)"
+        run: echo "::set-output name=version::$(grep -oP 'node:\K\d+' Dockerfile)"
 
   test:
     name: Test

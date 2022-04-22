@@ -69,7 +69,7 @@
       is one of several proposed
       <a href="https://css.oddbird.net/toggles/explainer/#toggle-states">in the explainer</a>.
     </p>
-    <button class="mode-btn">colors</button>
+    <button class="mode-btn" data-testid="mode-btn">colors</button>
     <pre>html {
   toggle-root: mode [auto light dark];
 }
@@ -87,7 +87,7 @@ html:toggle(mode dark) { ... }
       <a href="#binary-switch" aria-hidden="true">🔗</a>
       Binary self-toggle switches
     </h2>
-    <ul class='todo'>
+    <ul class='todo' data-testid="todo-list">
       <li>write an explainer</li>
       <li>draft a specification</li>
       <li>create a polyfill</li>
@@ -115,7 +115,7 @@ html:toggle(mode dark) { ... }
       We'll keep working to improve the polyfill a11y as well,
       but may not be able to achieve the same results.
     </p>
-    <dl class='accordion'>
+    <dl class="accordion" data-testid="accordion">
 
       <dt>Establish a toggle</dt>
       <dd><pre>.accordion>dt {
@@ -152,15 +152,19 @@ html:toggle(mode dark) { ... }
     <ul class="tree">
       <li><a href='#'>home</a></li>
       <li>
-        <button class='nested'>resources</button>
-        <ul>
-          <li><a href='#'>articles</a></li>
-          <li><a href='#'>demos</a></li>
+        <button class="nested" data-testid="resources-button">
+          resources
+        </button>
+        <ul data-testid="resources-branch">
+          <li><a href="#">articles</a></li>
+          <li><a href="#">demos</a></li>
           <li>
-            <button class='nested'>media</button>
-            <ul>
-              <li><a href='#'>audio</a></li>
-              <li><a href='#'>visual</a></li>
+            <button class="nested" data-testid="media-button">
+              media
+            </button>
+            <ul data-testid="media-branch">
+              <li><a href="#">audio</a></li>
+              <li><a href="#">visual</a></li>
             </ul>
           </li>
         </ul>
@@ -184,7 +188,7 @@ html:toggle(mode dark) { ... }
       <a href="https://github.com/oddbird/css-toggles/issues/9">issue 9</a>:
       Not possible to change initial state for one toggle in a group.
     </p>
-    <panel-set>
+    <panel-set data-testid="tabs">
       <panel-tab>Establishing Tabs</panel-tab>
       <panel-card><pre>panel-tab {
   toggle: tab 1 at 0 group sticky;
@@ -213,13 +217,13 @@ panel-card {
       is one of several proposed
       <a href="https://css.oddbird.net/toggles/explainer/#toggle-states">in the explainer</a>.
     </p>
-    <div class="colors">
+    <div class="colors" data-testid="colors">
       <button>Cycle</button>
       <button class="grape">Grape</button>
       <button class="green">Green</button>
       <button class="blue">Blue</button>
       <button class="red">Red</button>
-      <pre class="show-colors">.colors {
+      <pre class="show-colors" data-testid="colors-target">.colors {
   toggle-root: colors [grape green blue red] at blue;
 }
 
@@ -253,12 +257,12 @@ panel-card {
       If you have ideas, we'd love to hear from you.
       The following example would involve JS in production:
     </p>
-    <div class="request">
+    <div class="request" data-testid="machine">
       <button data-do="try">Try</button>
       <button data-do="resolve">Resolve</button>
       <button data-do="reject">Reject</button>
       <button data-do="reset">Reset</button>
-      <div class="status"></div>
+      <div class="status" data-testid="machine-status"></div>
     </div>
     <pre>@machine request {
   idle {

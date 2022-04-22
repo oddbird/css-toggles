@@ -10,6 +10,19 @@ services:
       - /app/node_modules
     ports:
       - '3000:3000'
-      - '24678:24678' # For Vite's HMR
     stdin_open: true
     tty: true
+
+  test:
+    profiles:
+      - donotstart
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BASE_IMAGE=mcr.microsoft.com/playwright:v1.21.0-focal
+    volumes:
+      - .:/app:cached
+      - /app/node_modules
+    ipc: host
+    command: yarn test
