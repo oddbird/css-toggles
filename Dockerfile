@@ -1,5 +1,4 @@
-ARG BASE_IMAGE="node:16"
-FROM ${BASE_IMAGE}
+FROM mcr.microsoft.com/playwright:v1.21.0-focal
 
 WORKDIR /app
 

@@ -43,7 +43,8 @@
     "lint": "yarn lint:css && yarn lint:js",
     "prepack": "yarn build",
     "preview": "rm -rf dist && yarn build && esbuild --servedir=. --serve=\"${PORT:-3000}\" --log-level=\"${LEVEL:-info}\"",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:ci": "playwright test --browser=all"
   },
   "devDependencies": {
     "@playwright/test": "^1.21.1",

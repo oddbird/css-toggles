@@ -7,52 +7,48 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  prepare:
-    name: Prepare
-    runs-on: ubuntu-latest
-    outputs:
-      node: ${{ steps.get-version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v3
-      - id: get-version
-        run: echo "::set-output name=version::$(grep -oP 'node:\K\d+' Dockerfile)"
+env:
+  NODE_VERSION: '16'
 
+jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose pull test
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
-      - run: docker-compose up test
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+          npx playwright install --with-deps
+      - run: yarn test:ci
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    needs: [prepare]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '${{ needs.prepare.outputs.node }}'
+          node-version: ${{ env.NODE_VERSION }}
           cache: yarn
       - name: Lint
         run: |
-          yarn install
+          yarn install --frozen-lockfile
           yarn lint
 
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [prepare, test, lint]
+    needs: [test, lint]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '${{ needs.prepare.outputs.node }}'
+          node-version: ${{ env.NODE_VERSION }}
           cache: yarn
       - run: yarn install
       - name: Release
