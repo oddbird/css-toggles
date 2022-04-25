@@ -34,7 +34,7 @@
     "build:esm:minified": "esbuild --bundle src/css-toggles.js --outfile=dist/css-toggles.min.js --format=esm --minify",
     "build:esm:debug": "esbuild --bundle src/css-toggles.js --outfile=dist/css-toggles.js --format=esm",
     "build": "rm -rf dist && yarn build:esm:debug && yarn build:esm:minified && yarn build:iife:minified",
-    "dev": "rm -rf dist && esbuild --bundle src/css-toggles.js --format=esm --servedir=. --outdir=dist --sourcemap --serve=\"${PORT:-3000}\" --log-level=\"${LEVEL:-info}\"",
+    "dev": "rm -rf dist && esbuild --bundle src/css-toggles.js --format=esm --servedir=. --outdir=dist --sourcemap",
     "format:css": "stylelint --fix src/**/*.css",
     "format:js": "prettier --write {src,tests}/**/*.js",
     "format": "yarn format:css && yarn format:js",
@@ -42,6 +42,7 @@
     "lint:js": "prettier --check {src,tests}/**/*.js",
     "lint": "yarn lint:css && yarn lint:js",
     "prepack": "yarn build",
+    "preview": "rm -rf dist && yarn build && esbuild --servedir=. --serve=\"${PORT:-3000}\" --log-level=\"${LEVEL:-info}\"",
     "test": "playwright test"
   },
   "devDependencies": {

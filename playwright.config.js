@@ -4,7 +4,7 @@ export default {
     timeout: 1000, // Max execution time of single expect() calls
   },
   webServer: {
-    command: 'PORT=4000 LEVEL=warning yarn dev',
+    command: 'PORT=4000 LEVEL=warning yarn preview',
     url: 'http://localhost:4000/',
     timeout: 10 * 1000,
     reuseExistingServer: !process.env.CI,
