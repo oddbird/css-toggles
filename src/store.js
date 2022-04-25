@@ -117,7 +117,7 @@ export function createToggleTriggers(ruleValue, selectors) {
 
   const dispatchToggleEvent = ({ target }) => {
     target.dispatchEvent(
-      new CustomEvent('toggle', {
+      new CustomEvent('_toggleTrigger', {
         bubbles: true,
         detail: { toggleRoot: name, targetState, transition },
       })

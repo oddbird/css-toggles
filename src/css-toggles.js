@@ -118,7 +118,7 @@ async function handleLinkedStylesheet(el) {
 }
 
 // This listener does the heavy lifting by handling the custom `toggle` event fired by the triggers
-document.body.addEventListener('toggle', event => {
+document.body.addEventListener('_toggleTrigger', event => {
   const { target } = event
   let { toggleRoot: name, targetState, transition } = event.detail
 
