@@ -27,33 +27,25 @@ const toggleTriggerRe = makeRegex([
   /(?<targetState>[\w-]*)/, // Target state name (optional)
 ])
 
-let counter = 0
-const uid = () => counter++
-
-export const toggleRoots = {}
+/** Stores the global toggle definitions and state  */
+export const toggles = {}
+/** Stores the global state machine definitions  */
 export const toggleMachines = {}
 
 /**
- * Get a list of the `element` and its next siblings
- * @param {HTMLElement} element
+ * Update a toggle by name, merging keys and creating the record if necessary
  */
-function withNextSiblings(element) {
-  const siblings = [element]
-  let next = element.nextElementSibling
-  while (next !== null) {
-    siblings.push(next)
-    next = next.nextElementSibling
-  }
-  return siblings
+export function updateToggle(name, config) {
+  const obj = toggles[name] || { name }
+  toggles[name] = Object.assign(obj, config)
 }
 
 /**
- * Create toggle root objects for all elements matching `selectors`.
- * The object keeps track of the current state
+ * Create a new toggle record with a root selector.
  * @param {string} ruleValue: value of the `toggle-root` or `toggle` rule
- * @param {string} selectors: CSS selector of elements to be used as roots
+ * @param {string} selector: CSS selector of elements to be used as roots
  */
-export function createToggleRoots(ruleValue, selectors) {
+export function createToggleRoots(ruleValue, selector) {
   const regex = ruleValue.includes('machine(') ? toggleRootMachineRe : toggleRootRe
   let { name, machine, strict, initial, numActive, states, at, modifiers } =
     regex.exec(ruleValue).groups
@@ -77,68 +69,38 @@ export function createToggleRoots(ruleValue, selectors) {
   const group = modifiers.includes('group')
   const isNarrow = modifiers.includes('self')
 
-  let activeIndex = states.indexOf(initial)
-  if (activeIndex === -1) activeIndex = states.indexOf(at)
-  if (activeIndex === -1) activeIndex = 0
+  let initialIndex = states.indexOf(initial)
+  if (initialIndex === -1) initialIndex = states.indexOf(at)
+  if (initialIndex === -1) initialIndex = 0
 
   let resetTo = 0
   if (modifiers.includes('linear')) resetTo = total - 1
   if (modifiers.includes('sticky')) resetTo = 1
 
-  const config = {
-    name,
+  updateToggle(name, {
     resetTo,
     group,
     isNarrow,
     total,
     states,
     machine,
-    activeIndex,
+    initialIndex,
     strict: Boolean(strict),
-  }
-
-  document.querySelectorAll(selectors).forEach(el => {
-    const id = `${name}-${uid()}`
-    const elements = isNarrow ? [el] : withNextSiblings(el)
-    elements.forEach(el => (el.dataset.toggleRoot = id))
-    toggleRoots[id] = { ...config }
+    rootSelector: selector,
   })
 }
 
 /**
- * Create toggle triggers for all elements matching `selectors`.
- * On click the elements will dispatch a custom `toggle` event
+ * Add triggers to a toggle record.
  * @param {string} ruleValue: value of the `toggle-trigger` rule
- * @param {string} selectors: CSS selector of elements to be used as triggers
+ * @param {string} selector: CSS selector of elements to be used as triggers
  */
-export function createToggleTriggers(ruleValue, selectors) {
+export function createToggleTriggers(ruleValue, selector) {
   const { name, targetState, transition } = toggleTriggerRe.exec(ruleValue).groups
   if (name === undefined) return
 
-  const dispatchToggleEvent = ({ target }) => {
-    target.dispatchEvent(
-      new CustomEvent('_toggleTrigger', {
-        bubbles: true,
-        detail: { toggleRoot: name, targetState, transition },
-      })
-    )
-  }
-
-  function handleKeyDown(event) {
-    if (![' ', 'Enter', 'Spacebar'].includes(event.key)) return
-    event.preventDefault()
-    dispatchToggleEvent(event)
-  }
-
-  document.querySelectorAll(selectors).forEach(el => {
-    el.dataset.toggleTrigger = ''
-    el.addEventListener('click', dispatchToggleEvent)
-    if (['button', 'a', 'input'].includes(el.nodeName.toLowerCase())) return
-
-    // Emulate button behavior on non-button trigger
-    el.addEventListener('keydown', handleKeyDown)
-    el.setAttribute('tabindex', 0)
-    el.setAttribute('role', 'button')
-    el.setAttribute('aria-pressed', false)
+  const currentTriggers = toggles[name]?.triggers || []
+  updateToggle(name, {
+    triggers: [...currentTriggers, { selector, targetState, transition }],
   })
 }

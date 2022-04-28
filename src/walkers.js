@@ -1,24 +1,12 @@
-import { toggleMachines, createToggleRoots, createToggleTriggers } from './store'
+import {
+  toggleMachines,
+  createToggleRoots,
+  createToggleTriggers,
+  updateToggle,
+  toggles,
+} from './store'
 
-// https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements#index
-const pseudoElements = [
-  'after',
-  'backdrop',
-  'before',
-  'cue',
-  'cue-region',
-  'first-letter',
-  'first-line',
-  'file-selector-button',
-  'grammar-error',
-  'marker',
-  'placeholder',
-  'selection',
-  'spelling-error',
-  'target-text',
-].join('|')
-const pseudoElementRe = RegExp(`::?(${pseudoElements})`)
-const togglePseudoClassRe = /:toggle\((?<name>[\w-]+) *(?<value>[\w-]*)\)/
+export const togglePseudoClassRe = /:toggle\((?<name>[\w-]+) *(?<value>[\w-]*)\)/
 const toggleVisibilityRe = /toggle *(?<name>[\w-]+)/
 
 /**
@@ -43,26 +31,27 @@ export function toggleMachineWalker(element) {
 }
 
 /**
- * Parse and mutate rules that use a `:toggle()` pseudoclass.
+ * Parse and mutate rules that use a `:toggle()` pseudoclass. Add matching
+ * elements to a list of "watchers".
  * @param {stylis Element} element
- * @returns {bool} indicates if the AST was mutated and transpilation is required
+ * @returns {bool} indicates if the AST was mutated and transpilation is
+ * required
  */
 export function togglePseudoClassWalker(element) {
   if (element.type !== 'rule') return
 
   let didReplace = false
   element.props = element.props.map(selector => {
-    if (!selector.match(togglePseudoClassRe)) return selector
+    const { name, value } = togglePseudoClassRe.exec(selector)?.groups || {}
+    if (!name) return selector
 
-    // Set up `data-toggle` attribute on the selected nodes to polyfill behavior
-    const baseSelector = selector
-      .slice(0, selector.search(togglePseudoClassRe))
-      .replace(pseudoElementRe, '')
-    document.querySelectorAll(baseSelector).forEach(el => (el.dataset.toggle = ''))
+    const currentWatchers = toggles[name]?.watchers || []
+    updateToggle(name, {
+      watchers: [...currentWatchers, selector],
+    })
 
     // Mutate the AST to convert the pseudoclass into `data-toggle` selector
     let replacement
-    const { name, value } = togglePseudoClassRe.exec(selector).groups
     if (value) {
       replacement = `[data-toggle="${name} ${value}"]`
     } else {
@@ -77,8 +66,8 @@ export function togglePseudoClassWalker(element) {
 }
 
 /**
- * Parse declarations that use the `toggle-visibility` property and set the
- * `data-toggle-visibility` attribute
+ * Parse declarations that use the `toggle-visibility` property and add them to
+ * a list of "collapsibles"
  * @param {stylis Element} element
  */
 export function toggleVisibilityWalker(element) {
@@ -86,13 +75,15 @@ export function toggleVisibilityWalker(element) {
   const { name } = toggleVisibilityRe.exec(element.children).groups
   if (name === undefined) return
 
-  document.querySelectorAll(element.parent.value).forEach(el => {
-    el.dataset.toggleVisibility = ''
+  const currentCollapsibles = toggles[name]?.collapsibles || []
+  updateToggle(name, {
+    collapsibles: [...currentCollapsibles, ...element.parent.props],
   })
 }
 
 /**
- * Parse declarations that use the `toggle-root` property and create toggle root records.
+ * Parse declarations that use the `toggle-root` property and create toggle root
+ * records.
  * @param {stylis Element} element
  */
 export function toggleRootWalker(element) {
@@ -101,7 +92,8 @@ export function toggleRootWalker(element) {
 }
 
 /**
- * Parse declarations that use the `toggle-trigger` property and initialize trigger logic.
+ * Parse declarations that use the `toggle-trigger` property and initialize
+ * trigger logic.
  * @param {stylis Element} element
  */
 export function toggleTriggerWalker(element) {
@@ -110,13 +102,19 @@ export function toggleTriggerWalker(element) {
 }
 
 /**
- * Parse declarations that use the `toggle` shorthand property and initialize roots and triggers.
+ * Parse declarations that use the `toggle` shorthand property and initialize
+ * roots and triggers.
  * @param {stylis Element} element
  */
 export function toggleWalker(element) {
   if (!(element.type === 'decl' && element.props === 'toggle')) return
-  const selectors = element.parent.value
+  const selector = element.parent.value
   const ruleValue = element.children
-  createToggleRoots(ruleValue, selectors)
-  createToggleTriggers(ruleValue, selectors)
+
+  createToggleRoots(ruleValue, selector)
+
+  // In shorthand mode pass only the toggle name to the trigger as the rest of
+  // the rule value should not be parsed
+  const [toggleName] = ruleValue.split(' ')
+  createToggleTriggers(toggleName, selector)
 }
