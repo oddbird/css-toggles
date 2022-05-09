@@ -24,7 +24,7 @@ jobs:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
       - uses: actions/setup-node@v3
         with:
-          node-version: lts/*
+          node-version: '16'
           cache: yarn
       - name: Upgrade dependencies
         run: |
@@ -41,7 +41,7 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git commit -m "Automated dependency upgrades"
+          git commit -m "chore(deps): automated dependency upgrades"
           git push -f origin ${{ github.ref_name }}:$BRANCH_NAME
       - name: Open pull request if needed
         if: steps.changes.outputs.count > 0
