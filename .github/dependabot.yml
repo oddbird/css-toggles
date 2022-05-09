@@ -6,3 +6,7 @@ updates:
       interval: weekly
       time: '04:00'
       timezone: America/New_York
+  - package-ecosystem: 'docker'
+    directory: '/'
+    schedule:
+      interval: weekly
