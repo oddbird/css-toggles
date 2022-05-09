@@ -20,7 +20,7 @@ jobs:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
       - uses: actions/setup-node@v3
         with:
-          node-version: lts
+          node-version: lts/*
           cache: yarn
       - name: Upgrade dependencies
         run: |
