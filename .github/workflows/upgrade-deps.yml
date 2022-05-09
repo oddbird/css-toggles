@@ -6,6 +6,10 @@ on:
     # Every Monday at 8:00 UTC (4:00 Eastern)
     - cron: '0 8 * * 1'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   upgrade:
     name: Upgrade & Open Pull Request
