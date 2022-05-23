@@ -39,14 +39,32 @@
     <p>
       This polyfill is designed to help us
       explore those questions.
-      It implements the entire
-      <a href="https://tabatkins.github.io/css-toggle/">draft spec</a>
-      as currently written,
+      It implements the
+      <a href="https://tabatkins.github.io/css-toggle/">draft spec syntax</a>
+      as currently written, where possible --
       in addition to some of the
       extensions proposed in our
       <a href="https://css.oddbird.net/toggles/explainer/">explainer</a>.
+    </p>
+    <p class="issue">
+      <strong>
+        The current polyfill implementation is a naive attempt
+        to uncover and document any issues in the spec —
+        which means that several of the following demos
+        <a href="https://github.com/oddbird/css-toggles/issues?q=is%3Aissue+is%3Aopen+label%3Aa11y">
+          are currently inaccessible.
+        </a>
+      </strong>
+      While we hope that some of those issues
+      can be resolved here in the polyfill,
+      others may require changes to the spec itself,
+      or access to browser-internals
+      that cannot be polyfilled well using JS.
+    </p>
+    <p>
       We're excited for you to play with this,
-      provide additional use-cases,
+      suggest additional use-cases,
+      help uncover undocumented issues,
       and provide us with feedback:
     </p>
     <ul>
@@ -64,11 +82,6 @@
       <a href="#named-modes" aria-hidden="true">🔗</a>
       Global color toggle
     </h2>
-    <p>
-      This syntax for named states
-      is one of several proposed
-      <a href="https://css.oddbird.net/toggles/explainer/#toggle-states">in the explainer</a>.
-    </p>
     <button class="mode-btn" data-testid="mode-btn">colors</button>
     <pre>html {
   toggle-root: mode [auto light dark];
@@ -87,6 +100,12 @@ html:toggle(mode dark) { ... }
       <a href="#binary-switch" aria-hidden="true">🔗</a>
       Binary self-toggle switches
     </h2>
+    <p class="issue">
+      <a href="https://github.com/oddbird/css-toggles/issues/20">Issue 20</a>:
+      There's a conflict between the HTML listitem role
+      and the added ARIA role of 'button'
+      used to make these interactive.
+    </p>
     <ul class='todo' data-testid="todo-list">
       <li>write an explainer</li>
       <li>draft a specification</li>
@@ -114,6 +133,11 @@ html:toggle(mode dark) { ... }
       and discoverability by default.
       We'll keep working to improve the polyfill a11y as well,
       but may not be able to achieve the same results.
+    </p>
+    <p class="issue">
+      <a href="https://github.com/oddbird/css-toggles/issues/20">Issue 13</a>:
+      While <code>aria-expanded</code> may work in some situations,
+      it has the same issues listed above with conflicting semantics/roles.
     </p>
     <dl class="accordion" data-testid="accordion">
 
@@ -149,6 +173,12 @@ html:toggle(mode dark) { ... }
       <a href="#tree-view" aria-hidden="true">🔗</a>
       Tree view
     </h2>
+    <p class="issue">
+      <a href="https://github.com/oddbird/css-toggles/issues/23">Issue 23</a>:
+      Does 'tree view' require different semantics
+      than simply 'nested disclosures'
+      (which may better describe the current behavior)?
+    </p>
     <ul class="tree">
       <li><a href='#'>home</a></li>
       <li>
@@ -184,10 +214,21 @@ html:toggle(mode dark) { ... }
       <a href="#panelset" aria-hidden="true">🔗</a>
       Tabs or exclusive accordions
     </h2>
-    <p class="issue">
-      <a href="https://github.com/oddbird/css-toggles/issues/9">issue 9</a>:
-      Not possible to change initial state for one toggle in a group.
-    </p>
+    <ul>
+      <li class="issue">
+        <a href="https://github.com/oddbird/css-toggles/issues/9">Issue 9</a>:
+        Not possible to change initial state for one toggle in a group.
+      </li>
+      <li class="issue">
+        <a href="https://github.com/oddbird/css-toggles/issues/13">Issue 13</a>:
+        In this case,
+        the expected a11y handling requires the
+        <code>tab</code> role
+        and <code>aria-selected</code>.
+        Is there a way to clearly support both
+        disclosure and tab a11y using this shared syntax?
+      </li>
+    </ul>
     <panel-set data-testid="tabs">
       <panel-tab>Establishing Tabs</panel-tab>
       <panel-card><pre>panel-tab {
@@ -212,10 +253,10 @@ panel-card {
       <a href="#named-colors" aria-hidden="true">🔗</a>
       Named states
     </h2>
-    <p>
-      This syntax for named states
-      is one of several proposed
-      <a href="https://css.oddbird.net/toggles/explainer/#toggle-states">in the explainer</a>.
+    <p class="issue">
+      <a href="https://github.com/oddbird/css-toggles/issues/21">Issue 21</a>:
+      These act like radio buttons,
+      but the proper a11y handling is not obvious from the syntax.
     </p>
     <div class="colors" data-testid="colors">
       <button>Cycle</button>
@@ -255,7 +296,14 @@ panel-card {
       However, it's not yet clear that there are
       entirely presentational (CSS-only) use-cases.
       If you have ideas, we'd love to hear from you.
-      The following example would involve JS in production:
+      The following example would involve JS in production.
+    </p>
+    <p class="issue">
+      <a href="https://github.com/oddbird/css-toggles/issues/22">Issue 22</a>:
+      It is not clear in the a11y tree which 'transitions'
+      are currently allowed/disabled,
+      and the resulting generated content
+      is not propery announced or selectable.
     </p>
     <div class="request" data-testid="machine">
       <button data-do="try">Try</button>
