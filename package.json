@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.22.2",
-    "esbuild": "^0.14.46",
+    "esbuild": "^0.14.47",
     "eslint": "^8.18.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
