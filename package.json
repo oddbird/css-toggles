@@ -47,8 +47,8 @@
     "test:ci": "playwright test --browser=all"
   },
   "devDependencies": {
-    "@playwright/test": "^1.23.4",
-    "esbuild": "^0.14.49",
+    "@playwright/test": "^1.24.0",
+    "esbuild": "^0.14.50",
     "eslint": "^8.20.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
