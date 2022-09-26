@@ -47,16 +47,16 @@
     "test:ci": "playwright test --browser=all"
   },
   "devDependencies": {
-    "@playwright/test": "^1.25.2",
-    "esbuild": "^0.15.8",
-    "eslint": "^8.23.1",
+    "@playwright/test": "^1.26.0",
+    "esbuild": "^0.15.9",
+    "eslint": "^8.24.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.2.5",
+    "eslint-plugin-n": "^15.3.0",
     "eslint-plugin-promise": "^6.0.1",
     "prettier": "^2.7.1",
-    "stylelint": "^14.12.0",
+    "stylelint": "^14.12.1",
     "stylelint-config-standard": "^28.0.0"
   },
   "dependencies": {
