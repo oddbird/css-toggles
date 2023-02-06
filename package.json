@@ -42,7 +42,7 @@
     "lint:js": "prettier --check {src,tests}/**/*.js && eslint {src,tests}/**/*.js",
     "lint": "yarn lint:css && yarn lint:js",
     "prepack": "yarn build",
-    "preview": "rm -rf dist && yarn build && esbuild --servedir=. --serve=\"${PORT:-3000}\" --log-level=\"${LEVEL:-info}\"",
+    "preview": "yarn build && esbuild --servedir=. --serve=\"${PORT:-3000}\" --log-level=\"${LEVEL:-info}\"",
     "test": "playwright test",
     "test:ci": "playwright test --browser=all"
   },
