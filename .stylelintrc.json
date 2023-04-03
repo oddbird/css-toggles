@@ -15,6 +15,7 @@
           "toggle-visibility"
         ]
       }
-    ]
+    ],
+    "media-feature-range-notation": ["prefix"]
   }
 }
