@@ -48,18 +48,18 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.35.1",
-    "esbuild": "^0.18.4",
-    "eslint": "^8.43.0",
+    "esbuild": "^0.18.11",
+    "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-n": "^16.0.0",
+    "eslint-plugin-n": "^16.0.1",
     "eslint-plugin-promise": "^6.1.1",
     "prettier": "^2.8.8",
-    "stylelint": "^15.8.0",
+    "stylelint": "^15.9.0",
     "stylelint-config-standard": "^33.0.0"
   },
   "dependencies": {
-    "stylis": "^4.2.0"
+    "stylis": "^4.3.0"
   }
 }
