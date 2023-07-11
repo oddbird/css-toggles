@@ -103,7 +103,7 @@ function renderToggle(domId) {
       `
       [data-toggle-root="${domId}"][data-toggle-visibility],
       [data-toggle-root="${domId}"] [data-toggle-visibility]
-      `
+      `,
     )
     .forEach(el => {
       // Avoid interfering with other nested toggles that don't match the current one
@@ -118,7 +118,7 @@ function renderToggle(domId) {
       `
       [data-toggle-root="${domId}"][data-toggle],
       [data-toggle-root="${domId}"] [data-toggle]
-      `
+      `,
     )
     .forEach(el => {
       // Avoid interfering with other nested toggles that don't match the current one
@@ -133,7 +133,7 @@ function renderToggle(domId) {
       `
       [data-toggle-root="${domId}"][data-toggle-trigger][aria-pressed],
       [data-toggle-root="${domId}"] [data-toggle-trigger][aria-pressed]
-      `
+      `,
     )
     .forEach(el => {
       // Avoid interfering with other nested toggles that don't match the current one
@@ -208,7 +208,7 @@ function dispatchToggleEvent({ target }) {
     new CustomEvent('_toggleTrigger', {
       bubbles: true,
       detail: { name, targetState, transition },
-    })
+    }),
   )
 }
 
@@ -285,11 +285,11 @@ Promise.all([...document.querySelectorAll('link')].map(handleLinkedStylesheet)).
       initToggle(name)
       Object.keys(toggles[name].activeIndices).forEach(renderToggle)
     })
-  }
+  },
 )
 
 // Insert styles for hidden content
 document.head.insertAdjacentHTML(
   'beforeend',
-  '<style>[data-toggle-visibility="hidden"] { display: none; }</style>'
+  '<style>[data-toggle-visibility="hidden"] { display: none; }</style>',
 )
