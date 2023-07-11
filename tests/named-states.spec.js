@@ -41,7 +41,7 @@ for (const color of ['grape', 'green', 'blue', 'red']) {
     await button.click()
     await expect(target, 'Clicking again should produce no change').toHaveAttribute(
       'data-toggle',
-      `colors ${color}`
+      `colors ${color}`,
     )
   })
 }

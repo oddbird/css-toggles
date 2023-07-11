@@ -24,7 +24,7 @@ export function toggleMachineWalker(element) {
       states[rule.value] = Object.fromEntries(
         rule.children
           .filter(child => child.type === 'decl')
-          .map(decl => [decl.props, decl.children])
+          .map(decl => [decl.props, decl.children]),
       )
     })
   toggleMachines[name] = { name, states }

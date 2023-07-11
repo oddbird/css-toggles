@@ -55,9 +55,9 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^16.0.1",
     "eslint-plugin-promise": "^6.1.1",
-    "prettier": "^2.8.8",
-    "stylelint": "^15.9.0",
-    "stylelint-config-standard": "^33.0.0"
+    "prettier": "^3.0.0",
+    "stylelint": "^15.10.1",
+    "stylelint-config-standard": "^34.0.0"
   },
   "dependencies": {
     "stylis": "^4.3.0"
