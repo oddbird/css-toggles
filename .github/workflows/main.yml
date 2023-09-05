@@ -52,7 +52,7 @@ jobs:
           cache: yarn
       - run: yarn install
       - name: Release
-        uses: cycjimmy/semantic-release-action@v3
+        uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: '19'
           branches: |
