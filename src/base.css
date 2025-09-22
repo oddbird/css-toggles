@@ -26,12 +26,15 @@ html {
 }
 
 body {
+  margin: 0;
+}
+
+main {
   display: grid;
   grid-template-columns:
     [full-start] minmax(0, 1fr)
     [main-start] minmax(0, 75ch) [main-end]
     minmax(0, 1fr) [full-end];
-  margin: 0;
 }
 
 /* layout */
