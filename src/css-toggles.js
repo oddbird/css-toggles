@@ -60,10 +60,30 @@ function initToggle(name) {
     toggles[name].activeIndices[id] = initialIndex
   })
 
+  // Toggle visibility
+  collapsibles?.forEach(selector => {
+    document.querySelectorAll(selector).forEach(el => {
+      el.dataset.toggleVisibility = ''
+      // Add an id for the `aria-controls` attr of the trigger
+      if (!el.id) el.id = el.dataset.toggleRoot
+    })
+  })
+
   // Toggle triggers
   triggers?.forEach(({ selector, targetState, transition }) => {
     document.querySelectorAll(selector).forEach(el => {
       el.dataset.toggleTrigger = [name, targetState, transition].join('/')
+
+      // If the toggle has "collapsibles" (uses `toggle-visibility`), add an
+      // `aria-expanded` attribute for better a11y
+      if (collapsibles) {
+        el.setAttribute('aria-expanded', false)
+        const target = document.querySelector(
+          `[data-toggle-visibility][data-toggle-root="${el.dataset.toggleRoot}"]`
+        )
+        if (target) el.setAttribute('aria-controls', target.id)
+      }
+
       if (['button', 'a', 'input'].includes(el.nodeName.toLowerCase())) return
 
       // Emulate button behavior on non-button trigger
@@ -80,11 +100,6 @@ function initToggle(name) {
       .slice(0, selector.search(togglePseudoClassRe))
       .replace(pseudoElementRe, '')
     document.querySelectorAll(baseSelector).forEach(el => (el.dataset.toggle = ''))
-  })
-
-  // Toggle visibility
-  collapsibles?.forEach(selector => {
-    document.querySelectorAll(selector).forEach(el => (el.dataset.toggleVisibility = ''))
   })
 }
 
@@ -140,6 +155,21 @@ function renderToggle(domId) {
       const closestRoot = el.closest('[data-toggle-root]')
       if (closestRoot?.dataset.toggleRoot !== domId) return
       el.setAttribute('aria-pressed', activeIndex > 0)
+    })
+
+  // Update expanded state of polyfilled triggers
+  document
+    .querySelectorAll(
+      `
+      [data-toggle-root="${domId}"][data-toggle-trigger][aria-expanded],
+      [data-toggle-root="${domId}"] [data-toggle-trigger][aria-expanded]
+      `
+    )
+    .forEach(el => {
+      // Avoid interfering with other nested toggles that don't match the current one
+      const closestRoot = el.closest('[data-toggle-root]')
+      if (closestRoot?.dataset.toggleRoot !== domId) return
+      el.setAttribute('aria-expanded', activeIndex > 0)
     })
 }
 
