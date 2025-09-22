@@ -1,3 +1,27 @@
+# This Proposal is Deprecated
+
+And the prototype JS implementation
+should not be used.
+
+- The style part of the problem --
+  responding to state --
+  is conditional CSS
+  that can be handled with
+  [container style queries](https://www.w3.org/TR/css-conditional-5/#style-container).
+- The issue of creating toggles
+  should be addressed
+  in other parts of the platform
+  with features like
+  [invoker commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
+
+In retrospect,
+I'm afraid this exploration
+(driven by Chrome)
+acted as a distraction
+from more viable solutions --
+while requiring extra effort from accessibility experts
+to document all the issues with our approach.
+
 # CSS Toggles preview
 
 - [Demo](https://toggles.oddbird.net)
